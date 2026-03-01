@@ -50,7 +50,15 @@ jobs:
       - name: Build iOS Framework
         run: ./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64 --stacktrace
 
+      - name: Cache SPM packages
+        uses: actions/cache@v4
+        with:
+          path: ~/SPMCache
+          key: ${{ runner.os }}-spm-${{ hashFiles('iosApp/iosApp.xcodeproj/project.pbxproj') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
       - name: Build iOS App
         run: |
           cd iosApp
-          xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Debug -destination 'generic/platform=iOS Simulator' build
+          xcodebuild -project iosApp.xcodeproj -scheme iosApp -configuration Debug -destination 'generic/platform=iOS Simulator' -clonedSourcePackagesDirPath "$HOME/SPMCache" build
