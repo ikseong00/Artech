@@ -397,3 +397,4 @@ obj/
 # Claude (로컬 설정만 제외)
 .claude/settings.local.json
 .claude/worktrees/
+/keystore.properties
