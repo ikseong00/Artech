@@ -17,22 +17,13 @@
     kotlinx.serialization.KSerializer serializer(...);
 }
 
-# Ktor
--keep class io.ktor.** { *; }
+# Ktor - engine discovery (ServiceLoader)
+-keep class io.ktor.client.engine.**EngineContainer { *; }
 -keepclassmembers class io.ktor.** { volatile <fields>; }
--keep class io.ktor.client.engine.okhttp.** { *; }
-
-# Supabase
--keep class io.github.jan.supabase.** { *; }
 
 # Room
 -keep class * extends androidx.room.RoomDatabase
 -keep @androidx.room.Entity class *
--dontwarn androidx.room.paging.**
-
-# Compose
--keep class androidx.compose.** { *; }
--dontwarn androidx.compose.**
 
 # Coroutines
 -keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
