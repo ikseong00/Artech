@@ -1,4 +1,4 @@
-# DevNews 프로젝트 지침
+# Artech 프로젝트 지침
 
 ## 프로젝트 개요
 
@@ -127,7 +127,7 @@ main (프로덕션) ← develop (개발 통합) ← feature branches
 
 ## 패키지
 
-- `org.ikseong.devnews`
+- `org.ikseong.artech`
 
 ## 역할 자동 분배
 
