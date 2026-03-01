@@ -1,4 +1,4 @@
-package org.ikseong.devnews.ui.theme
+package org.ikseong.artech.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -61,7 +61,7 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 @Composable
-fun DevNewsTheme(
+fun ArtechTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
@@ -69,7 +69,7 @@ fun DevNewsTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = DevNewsTypography(),
+        typography = ArtechTypography(),
         content = content,
     )
 }

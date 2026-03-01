@@ -1,4 +1,4 @@
-package org.ikseong.devnews.util
+package org.ikseong.artech.util
 
 import platform.Foundation.NSURL
 import platform.UIKit.UIActivityViewController

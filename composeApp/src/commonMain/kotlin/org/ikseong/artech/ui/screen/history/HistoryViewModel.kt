@@ -1,4 +1,4 @@
-package org.ikseong.devnews.ui.screen.history
+package org.ikseong.artech.ui.screen.history
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,8 +10,8 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import org.ikseong.devnews.data.model.HistoryArticle
-import org.ikseong.devnews.data.repository.HistoryRepository
+import org.ikseong.artech.data.model.HistoryArticle
+import org.ikseong.artech.data.repository.HistoryRepository
 
 class HistoryViewModel(
     private val historyRepository: HistoryRepository,

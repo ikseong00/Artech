@@ -1,4 +1,4 @@
-package org.ikseong.devnews.ui.component
+package org.ikseong.artech.ui.component
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,8 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import org.ikseong.devnews.data.model.Article
-import org.ikseong.devnews.util.relativeTimeString
+import org.ikseong.artech.data.model.Article
+import org.ikseong.artech.util.relativeTimeString
 
 @Composable
 fun ArticleCard(

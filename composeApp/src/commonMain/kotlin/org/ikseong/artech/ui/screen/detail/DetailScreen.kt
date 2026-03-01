@@ -1,4 +1,4 @@
-package org.ikseong.devnews.ui.screen.detail
+package org.ikseong.artech.ui.screen.detail
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -18,9 +18,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import org.ikseong.devnews.ui.component.WebView
-import org.ikseong.devnews.util.openUrl
-import org.ikseong.devnews.util.shareUrl
+import org.ikseong.artech.ui.component.WebView
+import org.ikseong.artech.util.openUrl
+import org.ikseong.artech.util.shareUrl
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

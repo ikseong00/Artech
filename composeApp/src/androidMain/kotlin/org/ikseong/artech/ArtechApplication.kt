@@ -1,17 +1,17 @@
-package org.ikseong.devnews
+package org.ikseong.artech
 
 import android.app.Application
-import org.ikseong.devnews.di.dataModule
-import org.ikseong.devnews.di.platformModule
-import org.ikseong.devnews.di.viewModelModule
+import org.ikseong.artech.di.dataModule
+import org.ikseong.artech.di.platformModule
+import org.ikseong.artech.di.viewModelModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 
-class DevNewsApplication : Application() {
+class ArtechApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         startKoin {
-            androidContext(this@DevNewsApplication)
+            androidContext(this@ArtechApplication)
             modules(dataModule, viewModelModule, platformModule)
         }
     }

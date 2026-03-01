@@ -1,4 +1,4 @@
-package org.ikseong.devnews.ui.theme
+package org.ikseong.artech.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

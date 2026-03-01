@@ -1,10 +1,10 @@
-package org.ikseong.devnews.data.local.entity
+package org.ikseong.artech.data.local.entity
 
 import kotlinx.datetime.Instant
 import kotlin.time.Clock
-import org.ikseong.devnews.data.model.Article
-import org.ikseong.devnews.data.model.ArticleCategory
-import org.ikseong.devnews.data.model.HistoryArticle
+import org.ikseong.artech.data.model.Article
+import org.ikseong.artech.data.model.ArticleCategory
+import org.ikseong.artech.data.model.HistoryArticle
 
 fun Article.toFavoriteEntity(): FavoriteEntity = FavoriteEntity(
     articleId = id,

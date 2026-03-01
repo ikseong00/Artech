@@ -1,4 +1,4 @@
-package org.ikseong.devnews.data.model
+package org.ikseong.artech.data.model
 
 enum class ThemeMode {
     SYSTEM,

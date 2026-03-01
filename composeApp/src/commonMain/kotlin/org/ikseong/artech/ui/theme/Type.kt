@@ -1,4 +1,4 @@
-package org.ikseong.devnews.ui.theme
+package org.ikseong.artech.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
@@ -7,11 +7,11 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import devnews.composeapp.generated.resources.Res
-import devnews.composeapp.generated.resources.pretendard_bold
-import devnews.composeapp.generated.resources.pretendard_medium
-import devnews.composeapp.generated.resources.pretendard_regular
-import devnews.composeapp.generated.resources.pretendard_semibold
+import artech.composeapp.generated.resources.Res
+import artech.composeapp.generated.resources.pretendard_bold
+import artech.composeapp.generated.resources.pretendard_medium
+import artech.composeapp.generated.resources.pretendard_regular
+import artech.composeapp.generated.resources.pretendard_semibold
 import org.jetbrains.compose.resources.Font
 
 val PretendardFontFamily: FontFamily
@@ -26,7 +26,7 @@ val PretendardFontFamily: FontFamily
     }
 
 @Composable
-fun DevNewsTypography(): Typography {
+fun ArtechTypography(): Typography {
     val pretendard = PretendardFontFamily
     return Typography(
         headlineLarge = TextStyle(

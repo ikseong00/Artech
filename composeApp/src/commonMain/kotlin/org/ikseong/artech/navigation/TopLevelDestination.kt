@@ -1,4 +1,4 @@
-package org.ikseong.devnews.navigation
+package org.ikseong.artech.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite

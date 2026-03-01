@@ -1,12 +1,12 @@
-package org.ikseong.devnews.data.repository
+package org.ikseong.artech.data.repository
 
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Order
-import org.ikseong.devnews.data.model.Article
-import org.ikseong.devnews.data.model.ArticleCategory
-import org.ikseong.devnews.data.model.ArticleDto
-import org.ikseong.devnews.data.model.toArticle
+import org.ikseong.artech.data.model.Article
+import org.ikseong.artech.data.model.ArticleCategory
+import org.ikseong.artech.data.model.ArticleDto
+import org.ikseong.artech.data.model.toArticle
 
 class ArticleRepository(private val client: SupabaseClient) {
 

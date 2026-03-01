@@ -1,4 +1,4 @@
-package org.ikseong.devnews.ui.screen.home
+package org.ikseong.artech.ui.screen.home
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,9 +33,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import org.ikseong.devnews.ui.component.ArticleCard
-import org.ikseong.devnews.ui.component.CategoryFilterRow
-import org.ikseong.devnews.ui.component.SearchBar
+import org.ikseong.artech.ui.component.ArticleCard
+import org.ikseong.artech.ui.component.CategoryFilterRow
+import org.ikseong.artech.ui.component.SearchBar
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,7 +65,7 @@ fun HomeScreen(
         TopAppBar(
             title = {
                 Text(
-                    text = "DevNews",
+                    text = "Artech",
                     style = MaterialTheme.typography.headlineSmall,
                 )
             },

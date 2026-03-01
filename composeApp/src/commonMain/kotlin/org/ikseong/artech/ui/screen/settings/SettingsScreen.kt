@@ -1,4 +1,4 @@
-package org.ikseong.devnews.ui.screen.settings
+package org.ikseong.artech.ui.screen.settings
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -43,7 +43,7 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import org.ikseong.devnews.data.model.ThemeMode
+import org.ikseong.artech.data.model.ThemeMode
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -144,7 +144,7 @@ fun SettingsScreen(
                     .toLocalDateTime(TimeZone.currentSystemDefault()).year
             }
             Text(
-                text = "\u00A9 $currentYear DevNews. All rights reserved.",
+                text = "\u00A9 $currentYear Artech. All rights reserved.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                 modifier = Modifier

@@ -1,4 +1,4 @@
-package org.ikseong.devnews.ui.screen.settings
+package org.ikseong.artech.ui.screen.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -6,10 +6,10 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.ikseong.devnews.data.model.ThemeMode
-import org.ikseong.devnews.data.repository.FavoriteRepository
-import org.ikseong.devnews.data.repository.HistoryRepository
-import org.ikseong.devnews.data.repository.SettingsRepository
+import org.ikseong.artech.data.model.ThemeMode
+import org.ikseong.artech.data.repository.FavoriteRepository
+import org.ikseong.artech.data.repository.HistoryRepository
+import org.ikseong.artech.data.repository.SettingsRepository
 
 class SettingsViewModel(
     private val settingsRepository: SettingsRepository,

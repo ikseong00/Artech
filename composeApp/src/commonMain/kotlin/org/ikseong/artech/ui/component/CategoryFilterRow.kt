@@ -1,4 +1,4 @@
-package org.ikseong.devnews.ui.component
+package org.ikseong.artech.ui.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,7 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import org.ikseong.devnews.data.model.ArticleCategory
+import org.ikseong.artech.data.model.ArticleCategory
 
 @Composable
 fun CategoryFilterRow(

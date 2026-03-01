@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		D868FD69262D8290C51F2F05 /* DevNews.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DevNews.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D868FD69262D8290C51F2F05 /* Artech.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Artech.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -64,7 +64,7 @@
 		D4F608120BEEB12529FF69BF /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D868FD69262D8290C51F2F05 /* DevNews.app */,
+				D868FD69262D8290C51F2F05 /* Artech.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -93,7 +93,7 @@
 				FB02A2B3C4D5E6F7A8B9C0D2 /* FirebaseAnalytics */,
 			);
 			productName = iosApp;
-			productReference = D868FD69262D8290C51F2F05 /* DevNews.app */;
+			productReference = D868FD69262D8290C51F2F05 /* Artech.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */

@@ -1,13 +1,13 @@
-package org.ikseong.devnews.data.local
+package org.ikseong.artech.data.local
 
 import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
-import org.ikseong.devnews.data.local.dao.FavoriteDao
-import org.ikseong.devnews.data.local.dao.ReadHistoryDao
-import org.ikseong.devnews.data.local.entity.FavoriteEntity
-import org.ikseong.devnews.data.local.entity.ReadHistoryEntity
+import org.ikseong.artech.data.local.dao.FavoriteDao
+import org.ikseong.artech.data.local.dao.ReadHistoryDao
+import org.ikseong.artech.data.local.entity.FavoriteEntity
+import org.ikseong.artech.data.local.entity.ReadHistoryEntity
 
 @Database(
     entities = [FavoriteEntity::class, ReadHistoryEntity::class],

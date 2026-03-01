@@ -1,4 +1,4 @@
-package org.ikseong.devnews
+package org.ikseong.artech
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

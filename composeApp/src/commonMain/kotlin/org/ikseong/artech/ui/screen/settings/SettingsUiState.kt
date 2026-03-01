@@ -1,6 +1,6 @@
-package org.ikseong.devnews.ui.screen.settings
+package org.ikseong.artech.ui.screen.settings
 
-import org.ikseong.devnews.data.model.ThemeMode
+import org.ikseong.artech.data.model.ThemeMode
 
 data class SettingsUiState(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,

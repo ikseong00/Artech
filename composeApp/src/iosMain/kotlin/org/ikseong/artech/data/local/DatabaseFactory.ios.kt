@@ -1,4 +1,4 @@
-package org.ikseong.devnews.data.local
+package org.ikseong.artech.data.local
 
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -23,6 +23,6 @@ actual class DatabaseFactory {
     }
 
     companion object {
-        private const val DB_NAME = "devnews.db"
+        private const val DB_NAME = "artech.db"
     }
 }

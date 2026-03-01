@@ -1,4 +1,4 @@
-package org.ikseong.devnews.data.model
+package org.ikseong.artech.data.model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

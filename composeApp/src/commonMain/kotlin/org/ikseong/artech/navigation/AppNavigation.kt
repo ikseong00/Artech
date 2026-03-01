@@ -1,4 +1,4 @@
-package org.ikseong.devnews.navigation
+package org.ikseong.artech.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
@@ -16,11 +16,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import org.ikseong.devnews.ui.screen.detail.DetailScreen
-import org.ikseong.devnews.ui.screen.favorite.FavoriteScreen
-import org.ikseong.devnews.ui.screen.history.HistoryScreen
-import org.ikseong.devnews.ui.screen.home.HomeScreen
-import org.ikseong.devnews.ui.screen.settings.SettingsScreen
+import org.ikseong.artech.ui.screen.detail.DetailScreen
+import org.ikseong.artech.ui.screen.favorite.FavoriteScreen
+import org.ikseong.artech.ui.screen.history.HistoryScreen
+import org.ikseong.artech.ui.screen.home.HomeScreen
+import org.ikseong.artech.ui.screen.settings.SettingsScreen
 
 @Composable
 fun AppNavigation() {

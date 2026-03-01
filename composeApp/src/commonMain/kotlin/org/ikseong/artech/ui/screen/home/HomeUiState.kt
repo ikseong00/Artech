@@ -1,7 +1,7 @@
-package org.ikseong.devnews.ui.screen.home
+package org.ikseong.artech.ui.screen.home
 
-import org.ikseong.devnews.data.model.Article
-import org.ikseong.devnews.data.model.ArticleCategory
+import org.ikseong.artech.data.model.Article
+import org.ikseong.artech.data.model.ArticleCategory
 
 data class HomeUiState(
     val articles: List<Article> = emptyList(),

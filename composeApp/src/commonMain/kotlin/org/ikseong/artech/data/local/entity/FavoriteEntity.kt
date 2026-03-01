@@ -1,4 +1,4 @@
-package org.ikseong.devnews.data.local.entity
+package org.ikseong.artech.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

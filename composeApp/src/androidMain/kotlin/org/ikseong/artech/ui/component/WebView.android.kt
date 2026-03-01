@@ -1,4 +1,4 @@
-package org.ikseong.devnews.ui.component
+package org.ikseong.artech.ui.component
 
 import android.annotation.SuppressLint
 import android.webkit.WebViewClient

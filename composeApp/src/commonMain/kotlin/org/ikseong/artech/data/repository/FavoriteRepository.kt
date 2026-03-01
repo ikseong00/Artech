@@ -1,12 +1,12 @@
-package org.ikseong.devnews.data.repository
+package org.ikseong.artech.data.repository
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import org.ikseong.devnews.data.local.dao.FavoriteDao
-import org.ikseong.devnews.data.local.entity.toArticle
-import org.ikseong.devnews.data.local.entity.toFavoriteEntity
-import org.ikseong.devnews.data.model.Article
+import org.ikseong.artech.data.local.dao.FavoriteDao
+import org.ikseong.artech.data.local.entity.toArticle
+import org.ikseong.artech.data.local.entity.toFavoriteEntity
+import org.ikseong.artech.data.model.Article
 
 class FavoriteRepository(private val favoriteDao: FavoriteDao) {
 

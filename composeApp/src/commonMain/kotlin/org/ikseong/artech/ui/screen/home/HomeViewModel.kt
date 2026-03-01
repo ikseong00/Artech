@@ -1,4 +1,4 @@
-package org.ikseong.devnews.ui.screen.home
+package org.ikseong.artech.ui.screen.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.ikseong.devnews.data.model.ArticleCategory
-import org.ikseong.devnews.data.repository.ArticleRepository
+import org.ikseong.artech.data.model.ArticleCategory
+import org.ikseong.artech.data.repository.ArticleRepository
 import kotlin.coroutines.cancellation.CancellationException
 
 @OptIn(FlowPreview::class)

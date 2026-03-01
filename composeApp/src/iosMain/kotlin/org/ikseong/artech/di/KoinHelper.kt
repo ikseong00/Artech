@@ -1,4 +1,4 @@
-package org.ikseong.devnews.di
+package org.ikseong.artech.di
 
 import org.koin.core.context.startKoin
 

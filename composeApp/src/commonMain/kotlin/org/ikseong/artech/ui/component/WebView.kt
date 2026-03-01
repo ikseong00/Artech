@@ -1,4 +1,4 @@
-package org.ikseong.devnews.ui.component
+package org.ikseong.artech.ui.component
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier

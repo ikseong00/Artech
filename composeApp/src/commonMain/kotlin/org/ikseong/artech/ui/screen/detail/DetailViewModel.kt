@@ -1,4 +1,4 @@
-package org.ikseong.devnews.ui.screen.detail
+package org.ikseong.artech.ui.screen.detail
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -10,11 +10,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.ikseong.devnews.data.model.Article
-import org.ikseong.devnews.data.repository.ArticleRepository
-import org.ikseong.devnews.data.repository.FavoriteRepository
-import org.ikseong.devnews.data.repository.HistoryRepository
-import org.ikseong.devnews.navigation.Route
+import org.ikseong.artech.data.model.Article
+import org.ikseong.artech.data.repository.ArticleRepository
+import org.ikseong.artech.data.repository.FavoriteRepository
+import org.ikseong.artech.data.repository.HistoryRepository
+import org.ikseong.artech.navigation.Route
 
 class DetailViewModel(
     savedStateHandle: SavedStateHandle,

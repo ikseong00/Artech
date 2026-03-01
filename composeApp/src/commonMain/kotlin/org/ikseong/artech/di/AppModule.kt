@@ -1,19 +1,19 @@
-package org.ikseong.devnews.di
+package org.ikseong.artech.di
 
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
-import org.ikseong.devnews.data.local.AppDatabase
-import org.ikseong.devnews.data.local.DataStoreFactory
-import org.ikseong.devnews.data.local.DatabaseFactory
-import org.ikseong.devnews.data.remote.SupabaseProvider
-import org.ikseong.devnews.data.repository.ArticleRepository
-import org.ikseong.devnews.data.repository.FavoriteRepository
-import org.ikseong.devnews.data.repository.HistoryRepository
-import org.ikseong.devnews.data.repository.SettingsRepository
-import org.ikseong.devnews.ui.screen.detail.DetailViewModel
-import org.ikseong.devnews.ui.screen.favorite.FavoriteViewModel
-import org.ikseong.devnews.ui.screen.history.HistoryViewModel
-import org.ikseong.devnews.ui.screen.home.HomeViewModel
-import org.ikseong.devnews.ui.screen.settings.SettingsViewModel
+import org.ikseong.artech.data.local.AppDatabase
+import org.ikseong.artech.data.local.DataStoreFactory
+import org.ikseong.artech.data.local.DatabaseFactory
+import org.ikseong.artech.data.remote.SupabaseProvider
+import org.ikseong.artech.data.repository.ArticleRepository
+import org.ikseong.artech.data.repository.FavoriteRepository
+import org.ikseong.artech.data.repository.HistoryRepository
+import org.ikseong.artech.data.repository.SettingsRepository
+import org.ikseong.artech.ui.screen.detail.DetailViewModel
+import org.ikseong.artech.ui.screen.favorite.FavoriteViewModel
+import org.ikseong.artech.ui.screen.history.HistoryViewModel
+import org.ikseong.artech.ui.screen.home.HomeViewModel
+import org.ikseong.artech.ui.screen.settings.SettingsViewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 

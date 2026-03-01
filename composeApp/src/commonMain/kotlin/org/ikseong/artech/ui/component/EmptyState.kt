@@ -1,4 +1,4 @@
-package org.ikseong.devnews.ui.component
+package org.ikseong.artech.ui.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

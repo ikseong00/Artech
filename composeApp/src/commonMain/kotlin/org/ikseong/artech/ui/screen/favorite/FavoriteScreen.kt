@@ -1,4 +1,4 @@
-package org.ikseong.devnews.ui.screen.favorite
+package org.ikseong.artech.ui.screen.favorite
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -25,8 +25,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import org.ikseong.devnews.ui.component.ArticleCard
-import org.ikseong.devnews.ui.component.EmptyState
+import org.ikseong.artech.ui.component.ArticleCard
+import org.ikseong.artech.ui.component.EmptyState
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)

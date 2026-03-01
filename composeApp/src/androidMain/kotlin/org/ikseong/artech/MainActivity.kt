@@ -1,4 +1,4 @@
-package org.ikseong.devnews
+package org.ikseong.artech
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

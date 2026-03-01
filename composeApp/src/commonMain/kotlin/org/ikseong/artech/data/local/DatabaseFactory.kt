@@ -1,4 +1,4 @@
-package org.ikseong.devnews.data.local
+package org.ikseong.artech.data.local
 
 import androidx.room.RoomDatabase
 

@@ -84,11 +84,11 @@ kotlin {
 }
 
 android {
-    namespace = "org.ikseong.devnews"
+    namespace = "org.ikseong.artech"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "org.ikseong.devnews"
+        applicationId = "org.ikseong.artech"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
@@ -122,7 +122,7 @@ room {
 }
 
 buildkonfig {
-    packageName = "org.ikseong.devnews"
+    packageName = "org.ikseong.artech"
 
     defaultConfigs {
         val properties = Properties()

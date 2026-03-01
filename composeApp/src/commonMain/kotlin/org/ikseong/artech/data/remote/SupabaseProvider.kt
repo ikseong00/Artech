@@ -1,9 +1,9 @@
-package org.ikseong.devnews.data.remote
+package org.ikseong.artech.data.remote
 
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
-import org.ikseong.devnews.BuildKonfig
+import org.ikseong.artech.BuildKonfig
 
 object SupabaseProvider {
 
