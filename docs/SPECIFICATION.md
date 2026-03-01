@@ -1,10 +1,10 @@
-# DevNews 프로젝트 명세서
+# Artech 프로젝트 명세서
 
 ## 1. 프로젝트 개요
 
 ### 1.1 프로젝트 소개
 
-DevNews는 국내외 주요 기술 블로그 아티클을 한 곳에서 탐색할 수 있는 애그리게이터 앱입니다.
+Artech는 국내외 주요 기술 블로그 아티클을 한 곳에서 탐색할 수 있는 애그리게이터 앱입니다.
 Supabase에 수집된 아티클을 카테고리별/키워드별로 조회하고, 즐겨찾기와 읽기이력을 로컬에 저장합니다.
 
 ### 1.2 기술 스택
@@ -21,7 +21,7 @@ Supabase에 수집된 아티클을 카테고리별/키워드별로 조회하고,
 | **로컬 DB** | Room KMP | - |
 | **직렬화** | kotlinx-serialization | - |
 | **날짜/시간** | kotlinx-datetime | - |
-| **패키지명** | `org.ikseong.devnews` | - |
+| **패키지명** | `org.ikseong.artech` | - |
 
 ### 1.3 지원 플랫폼
 
@@ -77,7 +77,7 @@ Supabase에 수집된 아티클을 카테고리별/키워드별로 조회하고,
 
 ```
 ┌─────────────────────────────────────┐
-│  DevNews                            │
+│  Artech                             │
 ├─────────────────────────────────────┤
 │  🔍 [검색어 입력...]               │  ← 검색바
 ├─────────────────────────────────────┤
@@ -349,11 +349,11 @@ enum class ArticleCategory {
 ## 5. 프로젝트 구조
 
 ```
-DevNews/
+Artech/
 ├── composeApp/
 │   └── src/
 │       ├── commonMain/
-│       │   └── kotlin/org/ikseong/devnews/
+│       │   └── kotlin/org/ikseong/artech/
 │       │       ├── App.kt
 │       │       ├── di/
 │       │       │   └── AppModule.kt

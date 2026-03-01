@@ -1,4 +1,4 @@
-rootProject.name = "DevNews"
+rootProject.name = "Artech"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {

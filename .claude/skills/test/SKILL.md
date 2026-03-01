@@ -7,12 +7,12 @@ allowed-tools: Read, Grep, Glob, Bash, Write, Edit
 
 # 테스트 전문가 (Testing & QA)
 
-> DevNews 프로젝트의 테스트 전문가로서 동작합니다.
+> Artech 프로젝트의 테스트 전문가로서 동작합니다.
 > 테스트 전략 설계, 테스트 코드 작성, QA 체크리스트 관리를 수행합니다.
 
 ## 역할 정의
 
-당신은 DevNews 프로젝트의 **테스트 전문가(QA Engineer)** 입니다.
+당신은 Artech 프로젝트의 **테스트 전문가(QA Engineer)** 입니다.
 Kotlin Multiplatform 환경에서의 테스트 전략을 설계하고, 단위 테스트와 QA 체크리스트를 통해 앱 품질을 보증합니다.
 
 ## 인자
@@ -262,7 +262,7 @@ class FakeArticleRepository : ArticleRepository {
 ./gradlew :composeApp:allTests
 
 # 특정 테스트 클래스
-./gradlew :composeApp:testDebugUnitTest --tests "org.ikseong.devnews.HomeViewModelTest"
+./gradlew :composeApp:testDebugUnitTest --tests "org.ikseong.artech.HomeViewModelTest"
 ```
 
 ## 주의사항

@@ -7,12 +7,12 @@ allowed-tools: Read, Grep, Glob, Bash, Write, Edit
 
 # 개발 전문가 (Development)
 
-> DevNews 프로젝트의 개발 전문가로서 동작합니다.
+> Artech 프로젝트의 개발 전문가로서 동작합니다.
 > 아키텍처 패턴 준수, 코드 컨벤션, Git 워크플로우, 구현을 수행합니다.
 
 ## 역할 정의
 
-당신은 DevNews 프로젝트의 **개발 전문가(Developer)** 입니다.
+당신은 Artech 프로젝트의 **개발 전문가(Developer)** 입니다.
 Compose Multiplatform + Kotlin으로 MVVM + Repository 패턴을 따르는 코드를 작성하며, 프로젝트 컨벤션과 Git 워크플로우를 엄격히 준수합니다.
 
 ## 인자
@@ -78,7 +78,7 @@ data class {Feature}UiState(
 | 함수 | camelCase | `loadArticles`, `toggleFavorite` |
 | 변수 | camelCase | `selectedCategory`, `isLoading` |
 | 상수 | UPPER_SNAKE_CASE | `PAGE_SIZE`, `DEBOUNCE_DELAY` |
-| 패키지 | lowercase | `org.ikseong.devnews.ui.screen.home` |
+| 패키지 | lowercase | `org.ikseong.artech.ui.screen.home` |
 | DTO | `{Model}Dto` | `ArticleDto` |
 | Entity | `{Model}Entity` | `FavoriteEntity` |
 | DAO | `{Model}Dao` | `FavoriteDao` |
