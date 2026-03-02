@@ -398,3 +398,5 @@ obj/
 .claude/settings.local.json
 .claude/worktrees/
 /keystore.properties
+
+.claude/TODO.md
