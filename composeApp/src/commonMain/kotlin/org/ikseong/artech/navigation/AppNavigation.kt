@@ -2,13 +2,17 @@ package org.ikseong.artech.navigation
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -43,7 +47,12 @@ fun AppNavigation() {
     Scaffold(
         bottomBar = {
             if (!isDetailScreen) {
-                NavigationBar {
+                val primaryColor = MaterialTheme.colorScheme.primary
+
+                NavigationBar(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 0.dp,
+                ) {
                     TopLevelDestination.entries.forEach { destination ->
                         val selected = currentDestination?.hierarchy?.any {
                             it.hasRoute(destination.route::class)
@@ -67,6 +76,13 @@ fun AppNavigation() {
                                 )
                             },
                             label = { Text(destination.label) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = primaryColor,
+                                selectedTextColor = primaryColor,
+                                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                indicatorColor = Color.Transparent,
+                            ),
                         )
                     }
                 }

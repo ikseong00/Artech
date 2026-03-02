@@ -9,5 +9,10 @@ data class Article(
     val summary: String?,
     val category: ArticleCategory?,
     val blogSource: String,
-    val displayDate: Instant,
-)
+    val publishedAt: Instant?,
+    val createdAt: Instant?,
+    val thumbnailUrl: String? = null,
+) {
+    val displayDate: Instant
+        get() = publishedAt ?: createdAt ?: Instant.DISTANT_PAST
+}

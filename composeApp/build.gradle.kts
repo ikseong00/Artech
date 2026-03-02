@@ -73,6 +73,10 @@ kotlin {
 
             // DataStore
             implementation(libs.androidx.datastore.preferences.core)
+
+            // Coil (Image Loading)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor3)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

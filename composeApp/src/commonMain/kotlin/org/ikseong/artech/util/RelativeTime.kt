@@ -1,6 +1,8 @@
 package org.ikseong.artech.util
 
 import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 fun relativeTimeString(instant: Instant): String {
     val now = kotlin.time.Clock.System.now()
@@ -11,12 +13,14 @@ fun relativeTimeString(instant: Instant): String {
     val days = durationMs / 86_400_000
 
     return when {
+        days > 30 -> {
+            val local = instant.toLocalDateTime(TimeZone.currentSystemDefault())
+            "${local.year}.${local.monthNumber.toString().padStart(2, '0')}.${local.dayOfMonth.toString().padStart(2, '0')}"
+        }
         minutes < 1 -> "방금 전"
         hours < 1 -> "${minutes}분 전"
         days < 1 -> "${hours}시간 전"
         days < 7 -> "${days}일 전"
-        days < 30 -> "${days / 7}주 전"
-        days < 365 -> "${days / 30}개월 전"
-        else -> "${days / 365}년 전"
+        else -> "${days / 7}주 전"
     }
 }

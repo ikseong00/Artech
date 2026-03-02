@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.DeleteSweep
@@ -13,11 +14,13 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.ikseong.artech.ui.component.ArticleCard
+import org.ikseong.artech.ui.component.CategoryFilterRow
 import org.ikseong.artech.ui.component.EmptyState
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -37,13 +41,18 @@ fun FavoriteScreen(
     viewModel: FavoriteViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val listState = rememberLazyListState()
     var showDeleteDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(uiState.selectedCategories) {
+        listState.scrollToItem(0)
+    }
 
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("즐겨찾기 전체 삭제") },
-            text = { Text("모든 즐겨찾기를 삭제하시겠습니까?") },
+            title = { Text("스크랩 전체 삭제") },
+            text = { Text("모든 스크랩을 삭제하시겠습니까?") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -65,9 +74,10 @@ fun FavoriteScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("즐겨찾기") },
+                title = { Text("스크랩") },
+                windowInsets = WindowInsets(0, 0, 0, 0),
                 actions = {
-                    if (uiState.articles.isNotEmpty()) {
+                    if (uiState.allArticles.isNotEmpty()) {
                         IconButton(onClick = { showDeleteDialog = true }) {
                             Icon(
                                 imageVector = Icons.Filled.DeleteSweep,
@@ -79,11 +89,11 @@ fun FavoriteScreen(
             )
         },
     ) { innerPadding ->
-        if (uiState.articles.isEmpty()) {
+        if (uiState.allArticles.isEmpty()) {
             EmptyState(
                 icon = Icons.Filled.BookmarkBorder,
-                message = "즐겨찾기한 아티클이 없습니다",
-                description = "관심 있는 아티클을 즐겨찾기에 추가해보세요",
+                message = "스크랩한 아티클이 없습니다",
+                description = "관심 있는 아티클을 스크랩해보세요",
                 ctaText = "홈으로 이동",
                 onCtaClick = onNavigateToHome,
                 modifier = Modifier
@@ -92,12 +102,21 @@ fun FavoriteScreen(
             )
         } else {
             LazyColumn(
+                state = listState,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding),
-                contentPadding = PaddingValues(16.dp),
+                contentPadding = PaddingValues(bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
+                item(key = "category_filter") {
+                    CategoryFilterRow(
+                        selectedCategories = uiState.selectedCategories,
+                        onCategoryToggled = viewModel::toggleCategory,
+                        onClearAll = viewModel::clearCategoryFilter,
+                    )
+                }
+
                 items(
                     items = uiState.articles,
                     key = { it.id },
@@ -105,6 +124,9 @@ fun FavoriteScreen(
                     ArticleCard(
                         article = article,
                         onClick = { onArticleClick(article.id, article.link) },
+                        isFavorite = true,
+                        onToggleFavorite = { viewModel.toggleFavorite(article) },
+                        modifier = Modifier.padding(horizontal = 16.dp),
                     )
                 }
             }

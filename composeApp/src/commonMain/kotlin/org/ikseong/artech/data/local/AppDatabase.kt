@@ -11,7 +11,7 @@ import org.ikseong.artech.data.local.entity.ReadHistoryEntity
 
 @Database(
     entities = [FavoriteEntity::class, ReadHistoryEntity::class],
-    version = 1,
+    version = 3,
 )
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase : RoomDatabase() {

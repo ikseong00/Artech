@@ -5,10 +5,11 @@ import org.ikseong.artech.data.model.ArticleCategory
 
 data class HomeUiState(
     val articles: List<Article> = emptyList(),
+    val recommendedArticles: List<Article> = emptyList(),
     val isLoading: Boolean = false,
     val isLoadingMore: Boolean = false,
     val error: String? = null,
-    val selectedCategory: ArticleCategory? = null,
+    val selectedCategories: Set<ArticleCategory> = emptySet(),
     val searchQuery: String = "",
     val isSearchActive: Boolean = false,
     val hasMorePages: Boolean = true,

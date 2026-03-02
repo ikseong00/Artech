@@ -24,6 +24,7 @@ val dataModule = module {
     single {
         get<DatabaseFactory>().create()
             .setDriver(BundledSQLiteDriver())
+            .fallbackToDestructiveMigration(dropAllTables = true)
             .build()
     }
     single { get<AppDatabase>().favoriteDao() }

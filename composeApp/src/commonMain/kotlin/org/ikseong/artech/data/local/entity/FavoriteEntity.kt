@@ -11,6 +11,8 @@ data class FavoriteEntity(
     val summary: String?,
     val category: String?,
     val blogSource: String,
-    val displayDate: Long,
+    val publishedAt: Long?,
+    val createdAt: Long?,
     val savedAt: Long,
+    val thumbnailUrl: String? = null,
 )

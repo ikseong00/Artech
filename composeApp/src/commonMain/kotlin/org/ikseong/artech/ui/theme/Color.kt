@@ -2,48 +2,33 @@ package org.ikseong.artech.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Primary - Blue
-val Blue10 = Color(0xFF001A41)
-val Blue20 = Color(0xFF003063)
-val Blue30 = Color(0xFF004787)
-val Blue40 = Color(0xFF1B60A8)
-val Blue80 = Color(0xFFA4C9FF)
-val Blue90 = Color(0xFFD3E4FF)
+// Primary - Cyan Teal
+val CyanTeal = Color(0xFF00D1FF)
+val CyanTealLight = Color(0xFF00B8D4)
+val CyanTealDark = Color(0xFF008BA3)
 
-// Secondary - Teal
-val Teal10 = Color(0xFF001F26)
-val Teal20 = Color(0xFF00363F)
-val Teal30 = Color(0xFF004E5A)
-val Teal40 = Color(0xFF006878)
-val Teal80 = Color(0xFF4FD8EB)
-val Teal90 = Color(0xFFAAEDFA)
+// Dark Mode Surfaces
+val DarkBackground = Color(0xFF0D1B1E)
+val DarkSurface = Color(0xFF15262A)
+val DarkSurfaceVariant = Color(0xFF16282C)
+val DarkBorder = Color(0xFF27373A)
+val DarkTextSecondary = Color(0xFF9AB6BC)
+val DarkTextTertiary = Color(0xFF8FA3A8)
 
-// Tertiary - Violet
-val Violet10 = Color(0xFF1E0048)
-val Violet20 = Color(0xFF341065)
-val Violet30 = Color(0xFF4B2880)
-val Violet40 = Color(0xFF63419A)
-val Violet80 = Color(0xFFCFBCFF)
-val Violet90 = Color(0xFFE9DDFF)
+// Light Mode Surfaces
+val LightBackground = Color(0xFFFFFFFF)
+val LightSurface = Color(0xFFF8FAFC)
+val LightSurfaceVariant = Color(0xFFF1F5F9)
+val LightBorder = Color(0xFFE2E8F0)
+val LightTextSecondary = Color(0xFF64748B)
+val LightTextPrimary = Color(0xFF0F172A)
 
 // Error - Red
-val Red10 = Color(0xFF410002)
-val Red20 = Color(0xFF690005)
-val Red30 = Color(0xFF93000A)
 val Red40 = Color(0xFFBA1A1A)
 val Red80 = Color(0xFFFFB4AB)
-val Red90 = Color(0xFFFFDAD6)
+val RedDark = Color(0xFFCF6679)
+val RedLight = Color(0xFFB00020)
 
 // Neutral
 val Neutral10 = Color(0xFF1B1B1F)
-val Neutral20 = Color(0xFF303034)
-val Neutral90 = Color(0xFFE3E2E6)
-val Neutral95 = Color(0xFFF1F0F4)
 val Neutral99 = Color(0xFFFDFBFF)
-
-// Neutral Variant
-val NeutralVariant30 = Color(0xFF44464F)
-val NeutralVariant50 = Color(0xFF757780)
-val NeutralVariant60 = Color(0xFF8F9099)
-val NeutralVariant80 = Color(0xFFC6C6D0)
-val NeutralVariant90 = Color(0xFFE2E2EC)

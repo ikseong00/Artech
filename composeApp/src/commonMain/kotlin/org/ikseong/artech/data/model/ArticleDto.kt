@@ -9,6 +9,7 @@ data class ArticleDto(
     val title: String,
     val link: String,
     val summary: String? = null,
+    @SerialName("primary_category")
     val category: ArticleCategory? = null,
     @SerialName("blog_source")
     val blogSource: String,
@@ -16,4 +17,6 @@ data class ArticleDto(
     val publishedAt: String? = null,
     @SerialName("created_at")
     val createdAt: String? = null,
+    @SerialName("thumbnail_url")
+    val thumbnailUrl: String? = null,
 )

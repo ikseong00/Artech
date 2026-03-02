@@ -42,9 +42,15 @@ class HomeViewModel(
         loadJob = viewModelScope.launch {
             try {
                 val articles = fetchArticles(offset = 0)
+                val recommended = if (articles.size >= 5) {
+                    articles.shuffled().take(5)
+                } else {
+                    articles.shuffled()
+                }
                 _uiState.update {
                     it.copy(
                         articles = articles,
+                        recommendedArticles = recommended,
                         isLoading = false,
                         hasMorePages = articles.size >= ArticleRepository.DEFAULT_PAGE_SIZE,
                     )
@@ -87,9 +93,18 @@ class HomeViewModel(
         }
     }
 
-    fun selectCategory(category: ArticleCategory?) {
-        if (_uiState.value.selectedCategory == category) return
-        _uiState.update { it.copy(selectedCategory = category) }
+    fun toggleCategory(category: ArticleCategory) {
+        _uiState.update {
+            val updated = it.selectedCategories.toMutableSet()
+            if (category in updated) updated.remove(category) else updated.add(category)
+            it.copy(selectedCategories = updated)
+        }
+        loadArticles()
+    }
+
+    fun clearCategoryFilter() {
+        if (_uiState.value.selectedCategories.isEmpty()) return
+        _uiState.update { it.copy(selectedCategories = emptySet()) }
         loadArticles()
     }
 
@@ -154,7 +169,7 @@ class HomeViewModel(
 
     private suspend fun fetchArticles(offset: Int) =
         articleRepository.getArticles(
-            category = _uiState.value.selectedCategory,
+            categories = _uiState.value.selectedCategories,
             offset = offset,
         )
 }
