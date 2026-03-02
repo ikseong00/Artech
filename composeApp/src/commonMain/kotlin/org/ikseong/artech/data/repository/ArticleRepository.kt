@@ -11,15 +11,15 @@ import org.ikseong.artech.data.model.toArticle
 class ArticleRepository(private val client: SupabaseClient) {
 
     suspend fun getArticles(
-        categories: Set<ArticleCategory> = emptySet(),
+        category: ArticleCategory? = null,
         offset: Int = 0,
         limit: Int = DEFAULT_PAGE_SIZE,
     ): List<Article> {
         return client.from(TABLE_NAME)
             .select {
                 filter {
-                    if (categories.isNotEmpty()) {
-                        isIn("primary_category", categories.map { it.displayName })
+                    if (category != null) {
+                        eq("primary_category", category.displayName)
                     } else {
                         neq("primary_category", EXCLUDED_CATEGORY)
                     }
@@ -33,15 +33,15 @@ class ArticleRepository(private val client: SupabaseClient) {
 
     suspend fun searchArticles(
         keyword: String,
-        categories: Set<ArticleCategory> = emptySet(),
+        category: ArticleCategory? = null,
         offset: Int = 0,
         limit: Int = DEFAULT_PAGE_SIZE,
     ): List<Article> {
         return client.from(TABLE_NAME)
             .select {
                 filter {
-                    if (categories.isNotEmpty()) {
-                        isIn("primary_category", categories.map { it.displayName })
+                    if (category != null) {
+                        eq("primary_category", category.displayName)
                     } else {
                         neq("primary_category", EXCLUDED_CATEGORY)
                     }

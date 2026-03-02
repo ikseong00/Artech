@@ -34,9 +34,8 @@ import org.ikseong.artech.data.model.ArticleCategory
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CategoryFilterRow(
-    selectedCategories: Set<ArticleCategory>,
-    onCategoryToggled: (ArticleCategory) -> Unit,
-    onClearAll: () -> Unit,
+    selectedCategory: ArticleCategory?,
+    onCategorySelected: (ArticleCategory?) -> Unit,
     modifier: Modifier = Modifier,
     categoryOrder: List<ArticleCategory> = ArticleCategory.entries.filter { it != ArticleCategory.Hiring },
 ) {
@@ -58,14 +57,18 @@ fun CategoryFilterRow(
                     verticalArrangement = Arrangement.spacedBy(0.dp),
                 ) {
                     AllChip(
-                        selected = selectedCategories.isEmpty(),
-                        onClick = onClearAll,
+                        selected = selectedCategory == null,
+                        onClick = { onCategorySelected(null) },
                     )
                     categoryOrder.forEach { category ->
                         CategoryChip(
                             category = category,
-                            selected = category in selectedCategories,
-                            onClick = { onCategoryToggled(category) },
+                            selected = category == selectedCategory,
+                            onClick = {
+                                onCategorySelected(
+                                    if (category == selectedCategory) null else category,
+                                )
+                            },
                         )
                     }
                 }
@@ -87,8 +90,8 @@ fun CategoryFilterRow(
                 ) {
                     item(key = "all") {
                         AllChip(
-                            selected = selectedCategories.isEmpty(),
-                            onClick = onClearAll,
+                            selected = selectedCategory == null,
+                            onClick = { onCategorySelected(null) },
                         )
                     }
                     items(
@@ -97,8 +100,12 @@ fun CategoryFilterRow(
                     ) { category ->
                         CategoryChip(
                             category = category,
-                            selected = category in selectedCategories,
-                            onClick = { onCategoryToggled(category) },
+                            selected = category == selectedCategory,
+                            onClick = {
+                                onCategorySelected(
+                                    if (category == selectedCategory) null else category,
+                                )
+                            },
                         )
                     }
                 }

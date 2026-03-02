@@ -44,7 +44,7 @@ fun FavoriteScreen(
     val listState = rememberLazyListState()
     var showDeleteDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(uiState.selectedCategories) {
+    LaunchedEffect(uiState.selectedCategory) {
         listState.scrollToItem(0)
     }
 
@@ -111,9 +111,8 @@ fun FavoriteScreen(
             ) {
                 item(key = "category_filter") {
                     CategoryFilterRow(
-                        selectedCategories = uiState.selectedCategories,
-                        onCategoryToggled = viewModel::toggleCategory,
-                        onClearAll = viewModel::clearCategoryFilter,
+                        selectedCategory = uiState.selectedCategory,
+                        onCategorySelected = viewModel::selectCategory,
                     )
                 }
 
