@@ -1,6 +1,8 @@
 package org.ikseong.artech.ui.screen.settings
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,10 +13,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DeleteSweep
@@ -24,8 +27,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -36,8 +40,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
@@ -52,25 +57,13 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    var showThemeDialog by remember { mutableStateOf(false) }
     var showDeleteFavoritesDialog by remember { mutableStateOf(false) }
     var showDeleteHistoryDialog by remember { mutableStateOf(false) }
 
-    if (showThemeDialog) {
-        ThemeModeDialog(
-            currentMode = uiState.themeMode,
-            onSelect = { mode ->
-                viewModel.setThemeMode(mode)
-                showThemeDialog = false
-            },
-            onDismiss = { showThemeDialog = false },
-        )
-    }
-
     if (showDeleteFavoritesDialog) {
         DeleteConfirmDialog(
-            title = "즐겨찾기 전체 삭제",
-            message = "모든 즐겨찾기를 삭제하시겠습니까?",
+            title = "스크랩 전체 삭제",
+            message = "모든 스크랩을 삭제하시겠습니까?",
             onConfirm = {
                 viewModel.deleteAllFavorites()
                 showDeleteFavoritesDialog = false
@@ -81,8 +74,8 @@ fun SettingsScreen(
 
     if (showDeleteHistoryDialog) {
         DeleteConfirmDialog(
-            title = "읽기이력 전체 삭제",
-            message = "모든 읽기이력을 삭제하시겠습니까?",
+            title = "히스토리 전체 삭제",
+            message = "모든 히스토리를 삭제하시겠습니까?",
             onConfirm = {
                 viewModel.deleteAllHistory()
                 showDeleteHistoryDialog = false
@@ -93,7 +86,10 @@ fun SettingsScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("설정") })
+            TopAppBar(
+                title = { Text("설정") },
+                windowInsets = WindowInsets(0, 0, 0, 0),
+            )
         },
     ) { innerPadding ->
         Column(
@@ -103,37 +99,57 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState()),
         ) {
             SettingsSectionHeader(title = "화면 설정")
-            SettingsItem(
+            SettingsToggleItem(
                 icon = Icons.Filled.DarkMode,
+                iconBackgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                iconTint = MaterialTheme.colorScheme.primary,
                 title = "다크모드",
-                description = uiState.themeMode.displayName(),
-                onClick = { showThemeDialog = true },
+                description = when (uiState.themeMode) {
+                    ThemeMode.DARK -> "켜짐"
+                    ThemeMode.LIGHT -> "꺼짐"
+                    ThemeMode.SYSTEM -> "시스템 설정"
+                },
+                checked = uiState.themeMode == ThemeMode.DARK,
+                onCheckedChange = { checked ->
+                    viewModel.setThemeMode(if (checked) ThemeMode.DARK else ThemeMode.LIGHT)
+                },
             )
 
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+            )
 
             SettingsSectionHeader(title = "데이터 관리")
             SettingsItem(
                 icon = Icons.Filled.Bookmark,
-                title = "즐겨찾기 전체 삭제",
-                description = "저장된 모든 즐겨찾기를 삭제합니다",
+                iconBackgroundColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
+                iconTint = MaterialTheme.colorScheme.error,
+                title = "스크랩 전체 삭제",
+                description = "저장된 모든 스크랩을 삭제합니다",
                 onClick = { showDeleteFavoritesDialog = true },
             )
             SettingsItem(
                 icon = Icons.Filled.DeleteSweep,
-                title = "읽기이력 전체 삭제",
-                description = "저장된 모든 읽기이력을 삭제합니다",
+                iconBackgroundColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
+                iconTint = MaterialTheme.colorScheme.error,
+                title = "히스토리 전체 삭제",
+                description = "저장된 모든 히스토리를 삭제합니다",
                 onClick = { showDeleteHistoryDialog = true },
             )
 
-            HorizontalDivider(modifier = Modifier.padding(horizontal = 16.dp))
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+            )
 
             SettingsSectionHeader(title = "앱 정보")
-            SettingsItem(
+            SettingsInfoItem(
                 icon = Icons.Filled.Info,
+                iconBackgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+                iconTint = MaterialTheme.colorScheme.onSurfaceVariant,
                 title = "앱 버전",
                 description = uiState.appVersion,
-                onClick = null,
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -168,26 +184,99 @@ private fun SettingsSectionHeader(title: String) {
 @Composable
 private fun SettingsItem(
     icon: ImageVector,
+    iconBackgroundColor: Color,
+    iconTint: Color,
     title: String,
     description: String,
-    onClick: (() -> Unit)?,
+    onClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .then(
-                if (onClick != null) Modifier.clickable(onClick = onClick)
-                else Modifier
-            )
+            .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        SettingsIconBox(icon = icon, backgroundColor = iconBackgroundColor, tint = iconTint)
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         Icon(
-            imageVector = icon,
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = null,
-            modifier = Modifier.size(24.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(24.dp),
         )
+    }
+}
+
+@Composable
+private fun SettingsToggleItem(
+    icon: ImageVector,
+    iconBackgroundColor: Color,
+    iconTint: Color,
+    title: String,
+    description: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onCheckedChange(!checked) }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        SettingsIconBox(icon = icon, backgroundColor = iconBackgroundColor, tint = iconTint)
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                checkedTrackColor = MaterialTheme.colorScheme.primary,
+            ),
+        )
+    }
+}
+
+@Composable
+private fun SettingsInfoItem(
+    icon: ImageVector,
+    iconBackgroundColor: Color,
+    iconTint: Color,
+    title: String,
+    description: String,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        SettingsIconBox(icon = icon, backgroundColor = iconBackgroundColor, tint = iconTint)
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -205,47 +294,25 @@ private fun SettingsItem(
 }
 
 @Composable
-private fun ThemeModeDialog(
-    currentMode: ThemeMode,
-    onSelect: (ThemeMode) -> Unit,
-    onDismiss: () -> Unit,
+private fun SettingsIconBox(
+    icon: ImageVector,
+    backgroundColor: Color,
+    tint: Color,
 ) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("다크모드 설정") },
-        text = {
-            Column(modifier = Modifier.selectableGroup()) {
-                ThemeMode.entries.forEach { mode ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .selectable(
-                                selected = mode == currentMode,
-                                onClick = { onSelect(mode) },
-                                role = Role.RadioButton,
-                            )
-                            .padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        RadioButton(
-                            selected = mode == currentMode,
-                            onClick = null,
-                        )
-                        Text(
-                            text = mode.displayName(),
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(start = 12.dp),
-                        )
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text("닫기")
-            }
-        },
-    )
+    Box(
+        modifier = Modifier
+            .size(40.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(backgroundColor),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier.size(22.dp),
+            tint = tint,
+        )
+    }
 }
 
 @Composable
@@ -270,10 +337,4 @@ private fun DeleteConfirmDialog(
             }
         },
     )
-}
-
-private fun ThemeMode.displayName(): String = when (this) {
-    ThemeMode.SYSTEM -> "시스템 설정"
-    ThemeMode.LIGHT -> "라이트 모드"
-    ThemeMode.DARK -> "다크 모드"
 }
