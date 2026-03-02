@@ -32,6 +32,7 @@ class ArticleRepository(private val client: SupabaseClient) {
 
     suspend fun searchArticles(
         keyword: String,
+        categories: Set<ArticleCategory> = emptySet(),
         offset: Int = 0,
         limit: Int = DEFAULT_PAGE_SIZE,
     ): List<Article> {
@@ -39,6 +40,9 @@ class ArticleRepository(private val client: SupabaseClient) {
             .select {
                 filter {
                     neq("primary_category", EXCLUDED_CATEGORY)
+                    if (categories.isNotEmpty()) {
+                        isIn("primary_category", categories.map { it.displayName })
+                    }
                     or {
                         ilike("title", "%$keyword%")
                         ilike("summary", "%$keyword%")

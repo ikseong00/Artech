@@ -99,13 +99,22 @@ class HomeViewModel(
             if (category in updated) updated.remove(category) else updated.add(category)
             it.copy(selectedCategories = updated)
         }
-        loadArticles()
+        reloadCurrentView()
     }
 
     fun clearCategoryFilter() {
         if (_uiState.value.selectedCategories.isEmpty()) return
         _uiState.update { it.copy(selectedCategories = emptySet()) }
-        loadArticles()
+        reloadCurrentView()
+    }
+
+    private fun reloadCurrentView() {
+        val state = _uiState.value
+        if (state.isSearchActive && state.searchQuery.isNotBlank()) {
+            searchArticles(state.searchQuery)
+        } else {
+            loadArticles()
+        }
     }
 
     fun updateSearchQuery(query: String) {
@@ -149,7 +158,10 @@ class HomeViewModel(
 
         loadJob = viewModelScope.launch {
             try {
-                val articles = articleRepository.searchArticles(query)
+                val articles = articleRepository.searchArticles(
+                    keyword = query,
+                    categories = _uiState.value.selectedCategories,
+                )
                 _uiState.update {
                     it.copy(
                         articles = articles,
