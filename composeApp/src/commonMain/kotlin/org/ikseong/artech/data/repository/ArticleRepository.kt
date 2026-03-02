@@ -11,14 +11,17 @@ import org.ikseong.artech.data.model.toArticle
 class ArticleRepository(private val client: SupabaseClient) {
 
     suspend fun getArticles(
-        category: ArticleCategory? = null,
+        categories: Set<ArticleCategory> = emptySet(),
         offset: Int = 0,
         limit: Int = DEFAULT_PAGE_SIZE,
     ): List<Article> {
         return client.from(TABLE_NAME)
             .select {
-                if (category != null) {
-                    filter { eq("primary_category", category.displayName) }
+                filter {
+                    neq("primary_category", EXCLUDED_CATEGORY)
+                    if (categories.isNotEmpty()) {
+                        isIn("primary_category", categories.map { it.displayName })
+                    }
                 }
                 order("published_at", Order.DESCENDING)
                 range(offset.toLong(), (offset + limit - 1).toLong())
@@ -35,6 +38,7 @@ class ArticleRepository(private val client: SupabaseClient) {
         return client.from(TABLE_NAME)
             .select {
                 filter {
+                    neq("primary_category", EXCLUDED_CATEGORY)
                     or {
                         ilike("title", "%$keyword%")
                         ilike("summary", "%$keyword%")
@@ -60,6 +64,7 @@ class ArticleRepository(private val client: SupabaseClient) {
 
     companion object {
         private const val TABLE_NAME = "tech_blog_articles"
+        private const val EXCLUDED_CATEGORY = "Hiring"
         const val DEFAULT_PAGE_SIZE = 20
     }
 }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.DeleteSweep
@@ -19,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,7 +41,12 @@ fun FavoriteScreen(
     viewModel: FavoriteViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val listState = rememberLazyListState()
     var showDeleteDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(uiState.selectedCategories) {
+        listState.scrollToItem(0)
+    }
 
     if (showDeleteDialog) {
         AlertDialog(
@@ -95,6 +102,7 @@ fun FavoriteScreen(
             )
         } else {
             LazyColumn(
+                state = listState,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding),
@@ -103,8 +111,9 @@ fun FavoriteScreen(
             ) {
                 item(key = "category_filter") {
                     CategoryFilterRow(
-                        selectedCategory = uiState.selectedCategory,
-                        onCategorySelected = viewModel::selectCategory,
+                        selectedCategories = uiState.selectedCategories,
+                        onCategoryToggled = viewModel::toggleCategory,
+                        onClearAll = viewModel::clearCategoryFilter,
                     )
                 }
 

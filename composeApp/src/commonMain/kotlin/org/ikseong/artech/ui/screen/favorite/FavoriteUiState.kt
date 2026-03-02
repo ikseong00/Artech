@@ -6,5 +6,5 @@ import org.ikseong.artech.data.model.ArticleCategory
 data class FavoriteUiState(
     val articles: List<Article> = emptyList(),
     val allArticles: List<Article> = emptyList(),
-    val selectedCategory: ArticleCategory? = null,
+    val selectedCategories: Set<ArticleCategory> = emptySet(),
 )

@@ -65,6 +65,10 @@ fun HomeScreen(
         }
     }
 
+    LaunchedEffect(uiState.selectedCategories) {
+        listState.scrollToItem(0)
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
             title = {
@@ -93,8 +97,9 @@ fun HomeScreen(
         }
 
         CategoryFilterRow(
-            selectedCategory = uiState.selectedCategory,
-            onCategorySelected = viewModel::selectCategory,
+            selectedCategories = uiState.selectedCategories,
+            onCategoryToggled = viewModel::toggleCategory,
+            onClearAll = viewModel::clearCategoryFilter,
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -154,7 +159,7 @@ fun HomeScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxSize(),
                     ) {
-                        if (uiState.recommendedArticles.isNotEmpty() && !uiState.isSearchActive && uiState.selectedCategory == null) {
+                        if (uiState.recommendedArticles.isNotEmpty() && !uiState.isSearchActive && uiState.selectedCategories.isEmpty()) {
                             item(key = "recommended_header") {
                                 Text(
                                     text = "오늘의 추천",

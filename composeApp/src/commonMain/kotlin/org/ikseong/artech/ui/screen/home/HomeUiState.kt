@@ -9,7 +9,7 @@ data class HomeUiState(
     val isLoading: Boolean = false,
     val isLoadingMore: Boolean = false,
     val error: String? = null,
-    val selectedCategory: ArticleCategory? = null,
+    val selectedCategories: Set<ArticleCategory> = emptySet(),
     val searchQuery: String = "",
     val isSearchActive: Boolean = false,
     val hasMorePages: Boolean = true,
