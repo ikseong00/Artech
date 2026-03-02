@@ -57,7 +57,7 @@ fun ArticleCard(
             Column(
                 modifier = Modifier.weight(1f),
             ) {
-                // 상단: 카테고리 뱃지 + 시간
+                // 상단: 카테고리 뱃지 + 출처
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -81,9 +81,10 @@ fun ArticleCard(
                     }
 
                     Text(
-                        text = relativeTimeString(article.displayDate),
-                        style = MaterialTheme.typography.labelSmall,
+                        text = article.blogSource,
+                        style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.SemiBold,
                     )
 
                     if (isFavorite != null && onToggleFavorite != null) {
@@ -110,12 +111,12 @@ fun ArticleCard(
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 2,
+                    maxLines = 3,
                     overflow = TextOverflow.Ellipsis,
                     lineHeight = MaterialTheme.typography.bodyLarge.lineHeight,
                 )
 
-                // 하단: summary + 출처
+                // 하단: summary + 기간
                 if (!article.summary.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
@@ -130,10 +131,9 @@ fun ArticleCard(
                 Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
-                    text = article.blogSource,
-                    style = MaterialTheme.typography.labelMedium,
+                    text = relativeTimeString(article.displayDate),
+                    style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.SemiBold,
                 )
             }
 
