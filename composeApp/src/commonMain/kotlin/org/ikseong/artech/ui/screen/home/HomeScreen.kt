@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -23,7 +24,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -35,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.ikseong.artech.ui.component.ArticleCard
 import org.ikseong.artech.ui.component.CategoryFilterRow
+import org.ikseong.artech.ui.component.RecommendedArticleCard
 import org.ikseong.artech.ui.component.SearchBar
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -77,6 +81,7 @@ fun HomeScreen(
                     )
                 }
             },
+            windowInsets = WindowInsets(0, 0, 0, 0),
         )
 
         if (uiState.isSearchActive) {
@@ -145,10 +150,47 @@ fun HomeScreen(
                 else -> {
                     LazyColumn(
                         state = listState,
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                        contentPadding = PaddingValues(vertical = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxSize(),
                     ) {
+                        if (uiState.recommendedArticles.isNotEmpty() && !uiState.isSearchActive && uiState.selectedCategory == null) {
+                            item(key = "recommended_header") {
+                                Text(
+                                    text = "오늘의 추천",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                                )
+                            }
+
+                            item(key = "recommended_row") {
+                                LazyRow(
+                                    contentPadding = PaddingValues(horizontal = 16.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                ) {
+                                    items(
+                                        items = uiState.recommendedArticles,
+                                        key = { "rec_${it.id}" },
+                                    ) { article ->
+                                        RecommendedArticleCard(
+                                            article = article,
+                                            onClick = { onArticleClick(article.id, article.link) },
+                                        )
+                                    }
+                                }
+                            }
+
+                            item(key = "latest_header") {
+                                Text(
+                                    text = "최신 아티클",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 4.dp),
+                                )
+                            }
+                        }
+
                         items(
                             items = uiState.articles,
                             key = { it.id },
@@ -156,6 +198,7 @@ fun HomeScreen(
                             ArticleCard(
                                 article = article,
                                 onClick = { onArticleClick(article.id, article.link) },
+                                modifier = Modifier.padding(horizontal = 16.dp),
                             )
                         }
 

@@ -42,9 +42,15 @@ class HomeViewModel(
         loadJob = viewModelScope.launch {
             try {
                 val articles = fetchArticles(offset = 0)
+                val recommended = if (articles.size >= 5) {
+                    articles.shuffled().take(5)
+                } else {
+                    articles.shuffled()
+                }
                 _uiState.update {
                     it.copy(
                         articles = articles,
+                        recommendedArticles = recommended,
                         isLoading = false,
                         hasMorePages = articles.size >= ArticleRepository.DEFAULT_PAGE_SIZE,
                     )
