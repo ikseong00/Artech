@@ -3,10 +3,6 @@ package org.ikseong.artech.data.model
 import kotlinx.datetime.Instant
 
 fun ArticleDto.toArticle(): Article {
-    val displayDate = parseInstantOrNull(publishedAt)
-        ?: parseInstantOrNull(createdAt)
-        ?: Instant.DISTANT_PAST
-
     return Article(
         id = id,
         title = title,
@@ -14,7 +10,9 @@ fun ArticleDto.toArticle(): Article {
         summary = summary,
         category = category,
         blogSource = blogSource,
-        displayDate = displayDate,
+        publishedAt = parseInstantOrNull(publishedAt),
+        createdAt = parseInstantOrNull(createdAt),
+        thumbnailUrl = thumbnailUrl,
     )
 }
 

@@ -18,7 +18,7 @@ class ArticleRepository(private val client: SupabaseClient) {
         return client.from(TABLE_NAME)
             .select {
                 if (category != null) {
-                    filter { eq("category", category.displayName) }
+                    filter { eq("primary_category", category.displayName) }
                 }
                 order("published_at", Order.DESCENDING)
                 range(offset.toLong(), (offset + limit - 1).toLong())

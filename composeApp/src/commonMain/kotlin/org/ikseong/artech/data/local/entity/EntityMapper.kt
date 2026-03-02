@@ -13,8 +13,10 @@ fun Article.toFavoriteEntity(): FavoriteEntity = FavoriteEntity(
     summary = summary,
     category = category?.name,
     blogSource = blogSource,
-    displayDate = displayDate.toEpochMilliseconds(),
+    publishedAt = publishedAt?.toEpochMilliseconds(),
+    createdAt = createdAt?.toEpochMilliseconds(),
     savedAt = Clock.System.now().toEpochMilliseconds(),
+    thumbnailUrl = thumbnailUrl,
 )
 
 fun FavoriteEntity.toArticle(): Article = Article(
@@ -26,7 +28,9 @@ fun FavoriteEntity.toArticle(): Article = Article(
         ArticleCategory.entries.find { it.name == name }
     },
     blogSource = blogSource,
-    displayDate = Instant.fromEpochMilliseconds(displayDate),
+    publishedAt = publishedAt?.let { Instant.fromEpochMilliseconds(it) },
+    createdAt = createdAt?.let { Instant.fromEpochMilliseconds(it) },
+    thumbnailUrl = thumbnailUrl,
 )
 
 fun Article.toReadHistoryEntity(): ReadHistoryEntity = ReadHistoryEntity(
@@ -36,8 +40,10 @@ fun Article.toReadHistoryEntity(): ReadHistoryEntity = ReadHistoryEntity(
     summary = summary,
     category = category?.name,
     blogSource = blogSource,
-    displayDate = displayDate.toEpochMilliseconds(),
+    publishedAt = publishedAt?.toEpochMilliseconds(),
+    createdAt = createdAt?.toEpochMilliseconds(),
     readAt = Clock.System.now().toEpochMilliseconds(),
+    thumbnailUrl = thumbnailUrl,
 )
 
 fun ReadHistoryEntity.toArticle(): Article = Article(
@@ -49,7 +55,9 @@ fun ReadHistoryEntity.toArticle(): Article = Article(
         ArticleCategory.entries.find { it.name == name }
     },
     blogSource = blogSource,
-    displayDate = Instant.fromEpochMilliseconds(displayDate),
+    publishedAt = publishedAt?.let { Instant.fromEpochMilliseconds(it) },
+    createdAt = createdAt?.let { Instant.fromEpochMilliseconds(it) },
+    thumbnailUrl = thumbnailUrl,
 )
 
 fun ReadHistoryEntity.toHistoryArticle(): HistoryArticle = HistoryArticle(
