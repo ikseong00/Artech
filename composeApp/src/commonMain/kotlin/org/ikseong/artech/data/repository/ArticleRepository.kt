@@ -18,9 +18,10 @@ class ArticleRepository(private val client: SupabaseClient) {
         return client.from(TABLE_NAME)
             .select {
                 filter {
-                    neq("primary_category", EXCLUDED_CATEGORY)
                     if (categories.isNotEmpty()) {
                         isIn("primary_category", categories.map { it.displayName })
+                    } else {
+                        neq("primary_category", EXCLUDED_CATEGORY)
                     }
                 }
                 order("published_at", Order.DESCENDING)
@@ -39,9 +40,10 @@ class ArticleRepository(private val client: SupabaseClient) {
         return client.from(TABLE_NAME)
             .select {
                 filter {
-                    neq("primary_category", EXCLUDED_CATEGORY)
                     if (categories.isNotEmpty()) {
                         isIn("primary_category", categories.map { it.displayName })
+                    } else {
+                        neq("primary_category", EXCLUDED_CATEGORY)
                     }
                     or {
                         ilike("title", "%$keyword%")
