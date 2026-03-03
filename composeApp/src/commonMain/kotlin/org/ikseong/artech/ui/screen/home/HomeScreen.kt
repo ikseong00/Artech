@@ -65,8 +65,12 @@ fun HomeScreen(
         }
     }
 
-    LaunchedEffect(uiState.selectedCategories) {
-        listState.scrollToItem(0)
+    LaunchedEffect(Unit) {
+        viewModel.uiEffect.collect { effect ->
+            when (effect) {
+                HomeUiEffect.ScrollToTop -> listState.scrollToItem(0)
+            }
+        }
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -97,9 +101,8 @@ fun HomeScreen(
         }
 
         CategoryFilterRow(
-            selectedCategories = uiState.selectedCategories,
-            onCategoryToggled = viewModel::toggleCategory,
-            onClearAll = viewModel::clearCategoryFilter,
+            selectedCategory = uiState.selectedCategory,
+            onCategorySelected = viewModel::selectCategory,
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -159,7 +162,7 @@ fun HomeScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxSize(),
                     ) {
-                        if (uiState.recommendedArticles.isNotEmpty() && !uiState.isSearchActive && uiState.selectedCategories.isEmpty()) {
+                        if (uiState.recommendedArticles.isNotEmpty() && !uiState.isSearchActive && uiState.selectedCategory == null) {
                             item(key = "recommended_header") {
                                 Text(
                                     text = "오늘의 추천",

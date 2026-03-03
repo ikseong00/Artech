@@ -9,8 +9,12 @@ data class HomeUiState(
     val isLoading: Boolean = false,
     val isLoadingMore: Boolean = false,
     val error: String? = null,
-    val selectedCategories: Set<ArticleCategory> = emptySet(),
+    val selectedCategory: ArticleCategory? = null,
     val searchQuery: String = "",
     val isSearchActive: Boolean = false,
     val hasMorePages: Boolean = true,
 )
+
+sealed interface HomeUiEffect {
+    data object ScrollToTop : HomeUiEffect
+}

@@ -4,12 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.ikseong.artech.data.model.ArticleCategory
@@ -23,6 +25,9 @@ class HomeViewModel(
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    private val _uiEffect = Channel<HomeUiEffect>(capacity = Channel.BUFFERED)
+    val uiEffect = _uiEffect.receiveAsFlow()
 
     private val searchQueryFlow = MutableStateFlow("")
 
@@ -55,6 +60,7 @@ class HomeViewModel(
                         hasMorePages = articles.size >= ArticleRepository.DEFAULT_PAGE_SIZE,
                     )
                 }
+                _uiEffect.trySend(HomeUiEffect.ScrollToTop)
             } catch (_: CancellationException) {
                 throw CancellationException()
             } catch (e: Exception) {
@@ -93,19 +99,19 @@ class HomeViewModel(
         }
     }
 
-    fun toggleCategory(category: ArticleCategory) {
-        _uiState.update {
-            val updated = it.selectedCategories.toMutableSet()
-            if (category in updated) updated.remove(category) else updated.add(category)
-            it.copy(selectedCategories = updated)
-        }
-        loadArticles()
+    fun selectCategory(category: ArticleCategory?) {
+        if (_uiState.value.selectedCategory == category) return
+        _uiState.update { it.copy(selectedCategory = category) }
+        reloadCurrentView()
     }
 
-    fun clearCategoryFilter() {
-        if (_uiState.value.selectedCategories.isEmpty()) return
-        _uiState.update { it.copy(selectedCategories = emptySet()) }
-        loadArticles()
+    private fun reloadCurrentView() {
+        val state = _uiState.value
+        if (state.isSearchActive && state.searchQuery.isNotBlank()) {
+            searchArticles(state.searchQuery)
+        } else {
+            loadArticles()
+        }
     }
 
     fun updateSearchQuery(query: String) {
@@ -149,7 +155,10 @@ class HomeViewModel(
 
         loadJob = viewModelScope.launch {
             try {
-                val articles = articleRepository.searchArticles(query)
+                val articles = articleRepository.searchArticles(
+                    keyword = query,
+                    category = _uiState.value.selectedCategory,
+                )
                 _uiState.update {
                     it.copy(
                         articles = articles,
@@ -157,6 +166,7 @@ class HomeViewModel(
                         hasMorePages = false,
                     )
                 }
+                _uiEffect.trySend(HomeUiEffect.ScrollToTop)
             } catch (_: CancellationException) {
                 throw CancellationException()
             } catch (e: Exception) {
@@ -169,7 +179,7 @@ class HomeViewModel(
 
     private suspend fun fetchArticles(offset: Int) =
         articleRepository.getArticles(
-            categories = _uiState.value.selectedCategories,
+            category = _uiState.value.selectedCategory,
             offset = offset,
         )
 }

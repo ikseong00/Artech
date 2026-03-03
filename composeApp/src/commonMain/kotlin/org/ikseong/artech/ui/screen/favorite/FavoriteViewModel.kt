@@ -15,21 +15,21 @@ class FavoriteViewModel(
     private val favoriteRepository: FavoriteRepository,
 ) : ViewModel() {
 
-    private val selectedCategories = MutableStateFlow<Set<ArticleCategory>>(emptySet())
+    private val selectedCategory = MutableStateFlow<ArticleCategory?>(null)
 
     val uiState = combine(
         favoriteRepository.getAll(),
-        selectedCategories,
-    ) { allArticles, categories ->
-        val filtered = if (categories.isNotEmpty()) {
-            allArticles.filter { it.category in categories }
+        selectedCategory,
+    ) { allArticles, category ->
+        val filtered = if (category != null) {
+            allArticles.filter { it.category == category }
         } else {
             allArticles
         }
         FavoriteUiState(
             articles = filtered,
             allArticles = allArticles,
-            selectedCategories = categories,
+            selectedCategory = category,
         )
     }.stateIn(
         scope = viewModelScope,
@@ -37,14 +37,8 @@ class FavoriteViewModel(
         initialValue = FavoriteUiState(),
     )
 
-    fun toggleCategory(category: ArticleCategory) {
-        selectedCategories.value = selectedCategories.value.toMutableSet().apply {
-            if (category in this) remove(category) else add(category)
-        }
-    }
-
-    fun clearCategoryFilter() {
-        selectedCategories.value = emptySet()
+    fun selectCategory(category: ArticleCategory?) {
+        selectedCategory.value = category
     }
 
     fun toggleFavorite(article: Article) {
