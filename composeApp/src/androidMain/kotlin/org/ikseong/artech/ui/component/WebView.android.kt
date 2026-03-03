@@ -21,8 +21,6 @@ private class ScrollAwareWebView(
         val dy = t - oldt
         if (dy == 0) return
 
-        val currentDirection = if (dy > 0) ScrollDirection.DOWN else ScrollDirection.UP
-
         if ((accumulatedDelta > 0 && dy < 0) || (accumulatedDelta < 0 && dy > 0)) {
             accumulatedDelta = 0
         }

@@ -13,9 +13,8 @@ import platform.WebKit.WKWebView
 import platform.darwin.NSObject
 import platform.UIKit.UIScrollViewDelegateProtocol
 
-private class ScrollDirectionDelegate(
-    private val onScrollDirectionChanged: (ScrollDirection) -> Unit,
-) : NSObject(), UIScrollViewDelegateProtocol {
+private class ScrollDirectionDelegate : NSObject(), UIScrollViewDelegateProtocol {
+    var onScrollDirectionChanged: ((ScrollDirection) -> Unit)? = null
 
     private var lastContentOffsetY = 0.0
     private var accumulatedDelta = 0.0
@@ -39,10 +38,10 @@ private class ScrollDirectionDelegate(
         val showThreshold = 300.0
         if (accumulatedDelta > hideThreshold && lastReportedDirection != ScrollDirection.DOWN) {
             lastReportedDirection = ScrollDirection.DOWN
-            onScrollDirectionChanged(ScrollDirection.DOWN)
+            onScrollDirectionChanged?.invoke(ScrollDirection.DOWN)
         } else if (accumulatedDelta < -showThreshold && lastReportedDirection != ScrollDirection.UP) {
             lastReportedDirection = ScrollDirection.UP
-            onScrollDirectionChanged(ScrollDirection.UP)
+            onScrollDirectionChanged?.invoke(ScrollDirection.UP)
         }
     }
 }
@@ -54,16 +53,13 @@ actual fun WebView(
     modifier: Modifier,
     onScrollDirectionChanged: ((ScrollDirection) -> Unit)?,
 ) {
-    val scrollDelegate = remember(onScrollDirectionChanged) {
-        onScrollDirectionChanged?.let { ScrollDirectionDelegate(it) }
-    }
+    val scrollDelegate = remember { ScrollDirectionDelegate() }
+    scrollDelegate.onScrollDirectionChanged = onScrollDirectionChanged
 
     UIKitView(
         factory = {
             WKWebView().apply {
-                if (scrollDelegate != null) {
-                    scrollView.delegate = scrollDelegate
-                }
+                scrollView.delegate = scrollDelegate
                 NSURL.URLWithString(url)?.let { nsUrl ->
                     loadRequest(NSURLRequest.requestWithURL(nsUrl))
                 }
