@@ -26,7 +26,7 @@ class HomeViewModel(
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
-    private val _uiEffect = Channel<HomeUiEffect>()
+    private val _uiEffect = Channel<HomeUiEffect>(capacity = Channel.BUFFERED)
     val uiEffect = _uiEffect.receiveAsFlow()
 
     private val searchQueryFlow = MutableStateFlow("")
@@ -60,7 +60,7 @@ class HomeViewModel(
                         hasMorePages = articles.size >= ArticleRepository.DEFAULT_PAGE_SIZE,
                     )
                 }
-                _uiEffect.send(HomeUiEffect.ScrollToTop)
+                _uiEffect.trySend(HomeUiEffect.ScrollToTop)
             } catch (_: CancellationException) {
                 throw CancellationException()
             } catch (e: Exception) {
@@ -166,7 +166,7 @@ class HomeViewModel(
                         hasMorePages = false,
                     )
                 }
-                _uiEffect.send(HomeUiEffect.ScrollToTop)
+                _uiEffect.trySend(HomeUiEffect.ScrollToTop)
             } catch (_: CancellationException) {
                 throw CancellationException()
             } catch (e: Exception) {
