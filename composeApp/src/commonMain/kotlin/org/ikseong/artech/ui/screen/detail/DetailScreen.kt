@@ -53,6 +53,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.ikseong.artech.ui.component.WebView
+import org.ikseong.artech.util.formatDate
 import org.ikseong.artech.util.openUrl
 import org.ikseong.artech.util.shareUrl
 import org.koin.compose.viewmodel.koinViewModel
@@ -149,6 +150,12 @@ fun DetailScreen(
                                         .padding(horizontal = 6.dp, vertical = 2.dp),
                                 )
                             }
+
+                            Text(
+                                text = formatDate(art.displayDate),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
                         }
                     }
 

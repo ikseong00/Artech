@@ -1,5 +1,8 @@
 package org.ikseong.artech.ui.component
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -14,6 +17,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -22,6 +27,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,6 +50,8 @@ fun ArticleCard(
     isFavorite: Boolean? = null,
     onToggleFavorite: (() -> Unit)? = null,
 ) {
+    var isSummaryExpanded by remember { mutableStateOf(false) }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -55,7 +66,11 @@ fun ArticleCard(
             modifier = Modifier.padding(16.dp),
         ) {
             Column(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier
+                    .weight(1f)
+                    .animateContentSize(
+                        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                    ),
             ) {
                 // 상단: 카테고리 뱃지 + 출처
                 Row(
@@ -116,16 +131,34 @@ fun ArticleCard(
                     lineHeight = MaterialTheme.typography.bodyLarge.lineHeight,
                 )
 
-                // 하단: summary + 기간
+                // 하단: summary (더보기/접기)
                 if (!article.summary.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = article.summary,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
+                        maxLines = if (isSummaryExpanded) Int.MAX_VALUE else 2,
+                        overflow = if (isSummaryExpanded) TextOverflow.Clip else TextOverflow.Ellipsis,
                     )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clickable { isSummaryExpanded = !isSummaryExpanded }
+                            .padding(top = 4.dp),
+                    ) {
+                        Text(
+                            text = if (isSummaryExpanded) "접기" else "더보기",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                        Icon(
+                            imageVector = if (isSummaryExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(16.dp),
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))

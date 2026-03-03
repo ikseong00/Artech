@@ -15,17 +15,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,7 +35,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.ikseong.artech.ui.component.ArticleCard
 import org.ikseong.artech.ui.component.CategoryFilterRow
 import org.ikseong.artech.ui.component.RecommendedArticleCard
-import org.ikseong.artech.ui.component.SearchBar
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -60,7 +55,7 @@ fun HomeScreen(
     }
 
     LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore && !uiState.isSearchActive) {
+        if (shouldLoadMore) {
             viewModel.loadMore()
         }
     }
@@ -81,24 +76,8 @@ fun HomeScreen(
                     style = MaterialTheme.typography.headlineSmall,
                 )
             },
-            actions = {
-                IconButton(onClick = { viewModel.toggleSearch() }) {
-                    Icon(
-                        imageVector = Icons.Filled.Search,
-                        contentDescription = "검색",
-                    )
-                }
-            },
             windowInsets = WindowInsets(0, 0, 0, 0),
         )
-
-        if (uiState.isSearchActive) {
-            SearchBar(
-                query = uiState.searchQuery,
-                onQueryChange = viewModel::updateSearchQuery,
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-        }
 
         CategoryFilterRow(
             selectedCategory = uiState.selectedCategory,
@@ -107,119 +86,113 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        PullToRefreshBox(
-            isRefreshing = uiState.isLoading && uiState.articles.isNotEmpty(),
-            onRefresh = viewModel::loadArticles,
-            modifier = Modifier.fillMaxSize(),
-        ) {
-            when {
-                uiState.isLoading && uiState.articles.isEmpty() -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        CircularProgressIndicator()
-                    }
+        when {
+            uiState.isLoading && uiState.articles.isEmpty() -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator()
                 }
+            }
 
-                uiState.error != null && uiState.articles.isEmpty() -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = uiState.error ?: "오류가 발생했습니다",
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.error,
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            TextButton(onClick = viewModel::loadArticles) {
-                                Icon(Icons.Filled.Refresh, contentDescription = null)
-                                Text("재시도")
-                            }
+            uiState.error != null && uiState.articles.isEmpty() -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = uiState.error ?: "오류가 발생했습니다",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        TextButton(onClick = viewModel::loadArticles) {
+                            Icon(Icons.Filled.Refresh, contentDescription = null)
+                            Text("재시도")
                         }
                     }
                 }
+            }
 
-                uiState.articles.isEmpty() -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = if (uiState.isSearchActive) "검색 결과가 없습니다" else "아티클이 없습니다",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            uiState.articles.isEmpty() -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "아티클이 없습니다",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            else -> {
+                LazyColumn(
+                    state = listState,
+                    contentPadding = PaddingValues(vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxSize(),
+                ) {
+                    if (uiState.recommendedArticles.isNotEmpty() && uiState.selectedCategory == null) {
+                        item(key = "recommended_header") {
+                            Text(
+                                text = "오늘의 추천",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                            )
+                        }
+
+                        item(key = "recommended_row") {
+                            LazyRow(
+                                contentPadding = PaddingValues(horizontal = 16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                items(
+                                    items = uiState.recommendedArticles,
+                                    key = { "rec_${it.id}" },
+                                ) { article ->
+                                    RecommendedArticleCard(
+                                        article = article,
+                                        onClick = { onArticleClick(article.id, article.link) },
+                                    )
+                                }
+                            }
+                        }
+
+                        item(key = "latest_header") {
+                            Text(
+                                text = "최신 아티클",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 4.dp),
+                            )
+                        }
+                    }
+
+                    items(
+                        items = uiState.articles,
+                        key = { it.id },
+                    ) { article ->
+                        ArticleCard(
+                            article = article,
+                            onClick = { onArticleClick(article.id, article.link) },
+                            modifier = Modifier.padding(horizontal = 16.dp),
                         )
                     }
-                }
 
-                else -> {
-                    LazyColumn(
-                        state = listState,
-                        contentPadding = PaddingValues(vertical = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxSize(),
-                    ) {
-                        if (uiState.recommendedArticles.isNotEmpty() && !uiState.isSearchActive && uiState.selectedCategory == null) {
-                            item(key = "recommended_header") {
-                                Text(
-                                    text = "오늘의 추천",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onBackground,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                                )
-                            }
-
-                            item(key = "recommended_row") {
-                                LazyRow(
-                                    contentPadding = PaddingValues(horizontal = 16.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                ) {
-                                    items(
-                                        items = uiState.recommendedArticles,
-                                        key = { "rec_${it.id}" },
-                                    ) { article ->
-                                        RecommendedArticleCard(
-                                            article = article,
-                                            onClick = { onArticleClick(article.id, article.link) },
-                                        )
-                                    }
-                                }
-                            }
-
-                            item(key = "latest_header") {
-                                Text(
-                                    text = "최신 아티클",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onBackground,
-                                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 4.dp),
-                                )
-                            }
-                        }
-
-                        items(
-                            items = uiState.articles,
-                            key = { it.id },
-                        ) { article ->
-                            ArticleCard(
-                                article = article,
-                                onClick = { onArticleClick(article.id, article.link) },
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                            )
-                        }
-
-                        if (uiState.isLoadingMore) {
-                            item {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    CircularProgressIndicator()
-                                }
+                    if (uiState.isLoadingMore) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                CircularProgressIndicator()
                             }
                         }
                     }
