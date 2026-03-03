@@ -1,8 +1,10 @@
 package org.ikseong.artech.ui.screen.detail
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
@@ -52,7 +54,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import org.ikseong.artech.ui.component.ScrollDirection
 import org.ikseong.artech.ui.component.WebView
+import org.ikseong.artech.util.formatDate
 import org.ikseong.artech.util.openUrl
 import org.ikseong.artech.util.shareUrl
 import org.koin.compose.viewmodel.koinViewModel
@@ -66,6 +70,7 @@ fun DetailScreen(
     val isFavorite by viewModel.isFavorite.collectAsStateWithLifecycle()
     val article by viewModel.article.collectAsStateWithLifecycle()
     var isSummaryExpanded by remember { mutableStateOf(false) }
+    var isHeaderVisible by remember { mutableStateOf(true) }
 
     Scaffold(
         topBar = {
@@ -111,55 +116,76 @@ fun DetailScreen(
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 article?.let { art ->
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                    AnimatedVisibility(
+                        visible = isHeaderVisible,
+                        enter = expandVertically(),
+                        exit = shrinkVertically(),
                     ) {
-                        Text(
-                            text = art.title,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = art.blogSource,
-                                style = MaterialTheme.typography.labelMedium,
-                                fontWeight = FontWeight.Medium,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
-
-                            if (art.category != null) {
+                        Column {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                            ) {
                                 Text(
-                                    text = art.category.displayName,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(4.dp))
-                                        .background(MaterialTheme.colorScheme.surfaceVariant)
-                                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                                    text = art.title,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
                                 )
+
+                                Spacer(modifier = Modifier.height(6.dp))
+
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Text(
+                                        text = art.blogSource,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    )
+
+                                    if (art.category != null) {
+                                        Text(
+                                            text = art.category.displayName,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(4.dp))
+                                                .background(MaterialTheme.colorScheme.surfaceVariant)
+                                                .padding(horizontal = 6.dp, vertical = 2.dp),
+                                        )
+                                    }
+
+                                    Text(
+                                        text = formatDate(art.displayDate),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
                             }
+
+                            HorizontalDivider(
+                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                            )
                         }
                     }
-
-                    HorizontalDivider(
-                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-                    )
                 }
 
                 WebView(
                     url = viewModel.link,
                     modifier = Modifier.fillMaxSize(),
+                    onScrollDirectionChanged = { direction ->
+                        when (direction) {
+                            ScrollDirection.DOWN -> isHeaderVisible = false
+                            ScrollDirection.UP -> isHeaderVisible = true
+                            ScrollDirection.NONE -> {}
+                        }
+                    },
                 )
             }
 

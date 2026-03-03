@@ -7,4 +7,5 @@ import androidx.compose.ui.Modifier
 expect fun WebView(
     url: String,
     modifier: Modifier = Modifier,
+    onScrollDirectionChanged: ((ScrollDirection) -> Unit)? = null,
 )

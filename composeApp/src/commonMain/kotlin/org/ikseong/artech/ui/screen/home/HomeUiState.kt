@@ -10,8 +10,6 @@ data class HomeUiState(
     val isLoadingMore: Boolean = false,
     val error: String? = null,
     val selectedCategory: ArticleCategory? = null,
-    val searchQuery: String = "",
-    val isSearchActive: Boolean = false,
     val hasMorePages: Boolean = true,
 )
 
