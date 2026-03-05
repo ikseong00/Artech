@@ -62,125 +62,127 @@ fun ArticleCard(
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                .animateContentSize(
+                    animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+                ),
         ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .animateContentSize(
-                        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-                    ),
-            ) {
-                // 상단: 카테고리 뱃지 + 출처
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
+            Row {
+                Column(
+                    modifier = Modifier.weight(1f),
                 ) {
-                    if (article.category != null) {
-                        Text(
-                            text = article.category.displayName.uppercase(),
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-                                .border(
-                                    width = 0.5.dp,
-                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                                    shape = RoundedCornerShape(4.dp),
-                                )
-                                .padding(horizontal = 6.dp, vertical = 2.dp),
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                    }
-
-                    Text(
-                        text = article.blogSource,
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-
-                    if (isFavorite != null && onToggleFavorite != null) {
-                        Spacer(modifier = Modifier.weight(1f))
-                        IconButton(
-                            onClick = onToggleFavorite,
-                            modifier = Modifier.size(28.dp),
-                        ) {
-                            Icon(
-                                imageVector = if (isFavorite) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
-                                contentDescription = if (isFavorite) "스크랩 해제" else "스크랩 추가",
-                                tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(18.dp),
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // 중간: 제목
-                Text(
-                    text = article.title,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis,
-                    lineHeight = MaterialTheme.typography.bodyLarge.lineHeight,
-                )
-
-                // 하단: summary (더보기/접기)
-                if (!article.summary.isNullOrBlank()) {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = article.summary,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = if (isSummaryExpanded) Int.MAX_VALUE else 2,
-                        overflow = if (isSummaryExpanded) TextOverflow.Clip else TextOverflow.Ellipsis,
-                    )
+                    // 상단: 카테고리 뱃지 + 출처
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .clickable { isSummaryExpanded = !isSummaryExpanded }
-                            .padding(top = 4.dp),
                     ) {
+                        if (article.category != null) {
+                            Text(
+                                text = article.category.displayName.uppercase(),
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(4.dp))
+                                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                                    .border(
+                                        width = 0.5.dp,
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                        shape = RoundedCornerShape(4.dp),
+                                    )
+                                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+
                         Text(
-                            text = if (isSummaryExpanded) "접기" else "더보기",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary,
+                            text = article.blogSource,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = FontWeight.SemiBold,
                         )
-                        Icon(
-                            imageVector = if (isSummaryExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(16.dp),
-                        )
+
+                        if (isFavorite != null && onToggleFavorite != null) {
+                            Spacer(modifier = Modifier.weight(1f))
+                            IconButton(
+                                onClick = onToggleFavorite,
+                                modifier = Modifier.size(28.dp),
+                            ) {
+                                Icon(
+                                    imageVector = if (isFavorite) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                                    contentDescription = if (isFavorite) "스크랩 해제" else "스크랩 추가",
+                                    tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            }
+                        }
                     }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // 중간: 제목
+                    Text(
+                        text = article.title,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 3,
+                        overflow = TextOverflow.Ellipsis,
+                        lineHeight = MaterialTheme.typography.bodyLarge.lineHeight,
+                    )
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
+                if (!isSummaryExpanded && !article.thumbnailUrl.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.width(16.dp))
+                    AsyncImage(
+                        model = article.thumbnailUrl,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(96.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                    )
+                }
+            }
 
+            // 하단: summary (더보기/접기)
+            if (!article.summary.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = relativeTimeString(article.displayDate),
-                    style = MaterialTheme.typography.labelSmall,
+                    text = article.summary,
+                    style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = if (isSummaryExpanded) Int.MAX_VALUE else 2,
+                    overflow = if (isSummaryExpanded) TextOverflow.Clip else TextOverflow.Ellipsis,
                 )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .clickable { isSummaryExpanded = !isSummaryExpanded }
+                        .padding(top = 4.dp),
+                ) {
+                    Text(
+                        text = if (isSummaryExpanded) "접기" else "더보기",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Icon(
+                        imageVector = if (isSummaryExpanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp),
+                    )
+                }
             }
 
-            if (!article.thumbnailUrl.isNullOrBlank()) {
-                Spacer(modifier = Modifier.width(16.dp))
-                AsyncImage(
-                    model = article.thumbnailUrl,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(96.dp)
-                        .clip(RoundedCornerShape(8.dp)),
-                )
-            }
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(
+                text = relativeTimeString(article.displayDate),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
