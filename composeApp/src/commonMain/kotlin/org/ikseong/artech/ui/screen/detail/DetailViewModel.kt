@@ -71,9 +71,14 @@ class DetailViewModel(
     }
 
     fun submitFeedback(reason: FeedbackReason) {
-        val articleId = _article.value?.id ?: return
+        val articleId = _article.value?.id
+        if (articleId == null) {
+            _feedbackState.value = FeedbackState.Error("아티클을 찾을 수 없습니다")
+            return
+        }
+        if (_feedbackState.value == FeedbackState.Submitting) return
+        _feedbackState.value = FeedbackState.Submitting
         viewModelScope.launch {
-            _feedbackState.value = FeedbackState.Submitting
             try {
                 feedbackRepository.submitFeedback(articleId, reason)
                 _feedbackState.value = FeedbackState.Success

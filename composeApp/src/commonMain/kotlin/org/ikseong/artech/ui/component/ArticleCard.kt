@@ -101,6 +101,9 @@ fun ArticleCard(
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
                         )
 
                         if (isFavorite != null && onToggleFavorite != null) {

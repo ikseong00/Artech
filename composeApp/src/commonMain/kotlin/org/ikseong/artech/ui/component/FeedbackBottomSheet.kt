@@ -61,29 +61,22 @@ fun FeedbackBottomSheet(
                         .padding(vertical = 24.dp),
                 )
             } else {
-                FeedbackReasonItem(
-                    icon = Icons.Outlined.Label,
-                    reason = FeedbackReason.WrongCategory,
-                    onClick = { onSubmit(FeedbackReason.WrongCategory) },
+                val reasonItems = listOf(
+                    FeedbackReason.WrongCategory to Icons.Outlined.Label,
+                    FeedbackReason.BadSummary to Icons.Outlined.SpeakerNotes,
+                    FeedbackReason.DuplicateArticle to Icons.Outlined.ContentCopy,
+                    FeedbackReason.WebViewLoadFailure to Icons.Outlined.BrokenImage,
                 )
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                FeedbackReasonItem(
-                    icon = Icons.Outlined.SpeakerNotes,
-                    reason = FeedbackReason.BadSummary,
-                    onClick = { onSubmit(FeedbackReason.BadSummary) },
-                )
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                FeedbackReasonItem(
-                    icon = Icons.Outlined.ContentCopy,
-                    reason = FeedbackReason.DuplicateArticle,
-                    onClick = { onSubmit(FeedbackReason.DuplicateArticle) },
-                )
-                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
-                FeedbackReasonItem(
-                    icon = Icons.Outlined.BrokenImage,
-                    reason = FeedbackReason.WebViewLoadFailure,
-                    onClick = { onSubmit(FeedbackReason.WebViewLoadFailure) },
-                )
+                reasonItems.forEachIndexed { index, (reason, icon) ->
+                    FeedbackReasonItem(
+                        icon = icon,
+                        reason = reason,
+                        onClick = { onSubmit(reason) },
+                    )
+                    if (index < reasonItems.lastIndex) {
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                    }
+                }
             }
         }
     }

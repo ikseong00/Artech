@@ -104,7 +104,10 @@ fun DetailScreen(
         FeedbackBottomSheet(
             isSubmitting = feedbackState is FeedbackState.Submitting,
             onSubmit = { reason -> viewModel.submitFeedback(reason) },
-            onDismiss = { showFeedbackSheet = false },
+            onDismiss = {
+                showFeedbackSheet = false
+                viewModel.resetFeedbackState()
+            },
         )
     }
 
