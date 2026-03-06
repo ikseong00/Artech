@@ -400,3 +400,8 @@ obj/
 /keystore.properties
 
 .claude/TODO.md
+
+# Sensitive credentials
+ios
+AuthKey_*.p8
+*.mobileprovision
