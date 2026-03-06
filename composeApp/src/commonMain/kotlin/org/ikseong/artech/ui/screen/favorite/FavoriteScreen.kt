@@ -8,7 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,8 +51,8 @@ fun FavoriteScreen(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("스크랩 전체 삭제") },
-            text = { Text("모든 스크랩을 삭제하시겠습니까?") },
+            title = { Text("좋아요 전체 삭제") },
+            text = { Text("모든 좋아요를 삭제하시겠습니까?") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -74,7 +74,7 @@ fun FavoriteScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("스크랩") },
+                title = { Text("좋아요") },
                 windowInsets = WindowInsets(0, 0, 0, 0),
                 actions = {
                     if (uiState.allArticles.isNotEmpty()) {
@@ -91,9 +91,9 @@ fun FavoriteScreen(
     ) { innerPadding ->
         if (uiState.allArticles.isEmpty()) {
             EmptyState(
-                icon = Icons.Filled.BookmarkBorder,
-                message = "스크랩한 아티클이 없습니다",
-                description = "관심 있는 아티클을 스크랩해보세요",
+                icon = Icons.Outlined.FavoriteBorder,
+                message = "좋아요한 아티클이 없습니다",
+                description = "관심 있는 아티클에 좋아요를 눌러보세요",
                 ctaText = "홈으로 이동",
                 onCtaClick = onNavigateToHome,
                 modifier = Modifier
