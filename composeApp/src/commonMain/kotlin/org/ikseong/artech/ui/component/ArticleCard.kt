@@ -150,25 +150,19 @@ fun ArticleCard(
                 // 하단: summary (더보기/접기)
                 if (!article.summary.isNullOrBlank()) {
                     Spacer(modifier = Modifier.height(8.dp))
-                    if (isSummaryExpanded) {
-                        Text(
-                            text = article.summary,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    } else {
-                        Text(
-                            text = article.summary,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                        )
+                    Text(
+                        text = article.summary,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = if (isSummaryExpanded) Int.MAX_VALUE else 2,
+                        overflow = if (isSummaryExpanded) TextOverflow.Clip else TextOverflow.Ellipsis,
+                    )
+                    if (!isSummaryExpanded) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .clickable { isSummaryExpanded = true }
-                                .padding(top = 4.dp),
+                                .padding(vertical = 4.dp, horizontal = 2.dp),
                         ) {
                             Text(
                                 text = "더보기",

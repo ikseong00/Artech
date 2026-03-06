@@ -35,8 +35,8 @@ class HomeViewModel(
             val lastVisit = settingsRepository.lastVisitTime.first()
             _uiState.update { it.copy(lastVisitTime = lastVisit) }
             settingsRepository.updateLastVisitTime()
+            loadArticles()
         }
-        loadArticles()
     }
 
     fun loadArticles() {
