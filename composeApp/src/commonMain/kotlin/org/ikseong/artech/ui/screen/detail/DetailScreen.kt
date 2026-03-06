@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.OpenInBrowser
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.outlined.Flag
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,12 +41,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,6 +60,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
+import org.ikseong.artech.ui.component.FeedbackBottomSheet
 import org.ikseong.artech.ui.component.ScrollDirection
 import org.ikseong.artech.ui.component.WebView
 import org.ikseong.artech.util.formatDate
@@ -69,10 +77,43 @@ fun DetailScreen(
 ) {
     val isFavorite by viewModel.isFavorite.collectAsStateWithLifecycle()
     val article by viewModel.article.collectAsStateWithLifecycle()
+    val feedbackState by viewModel.feedbackState.collectAsStateWithLifecycle()
     var isSummaryExpanded by remember { mutableStateOf(false) }
     var isHeaderVisible by remember { mutableStateOf(true) }
+    var showFeedbackSheet by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(feedbackState) {
+        when (feedbackState) {
+            is FeedbackState.Success -> {
+                showFeedbackSheet = false
+                snackbarHostState.showSnackbar("피드백이 전송되었습니다")
+                viewModel.resetFeedbackState()
+            }
+            is FeedbackState.Error -> {
+                showFeedbackSheet = false
+                snackbarHostState.showSnackbar((feedbackState as FeedbackState.Error).message)
+                viewModel.resetFeedbackState()
+            }
+            else -> {}
+        }
+    }
+
+    if (showFeedbackSheet) {
+        FeedbackBottomSheet(
+            isSubmitting = feedbackState is FeedbackState.Submitting,
+            onSubmit = { reason -> viewModel.submitFeedback(reason) },
+            onDismiss = {
+                showFeedbackSheet = false
+                viewModel.resetFeedbackState()
+            },
+        )
+    }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {},
@@ -103,6 +144,12 @@ fun DetailScreen(
                         Icon(
                             imageVector = Icons.Filled.Share,
                             contentDescription = "공유",
+                        )
+                    }
+                    IconButton(onClick = { showFeedbackSheet = true }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Flag,
+                            contentDescription = "피드백 보내기",
                         )
                     }
                 },

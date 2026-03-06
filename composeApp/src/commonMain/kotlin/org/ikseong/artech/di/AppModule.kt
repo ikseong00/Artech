@@ -7,6 +7,7 @@ import org.ikseong.artech.data.local.DatabaseFactory
 import org.ikseong.artech.data.remote.SupabaseProvider
 import org.ikseong.artech.data.repository.ArticleRepository
 import org.ikseong.artech.data.repository.FavoriteRepository
+import org.ikseong.artech.data.repository.FeedbackRepository
 import org.ikseong.artech.data.repository.HistoryRepository
 import org.ikseong.artech.data.repository.SettingsRepository
 import org.ikseong.artech.ui.screen.detail.DetailViewModel
@@ -20,6 +21,7 @@ import org.koin.dsl.module
 val dataModule = module {
     single { SupabaseProvider.client }
     single { ArticleRepository(get()) }
+    single { FeedbackRepository(get()) }
 
     single {
         get<DatabaseFactory>().create()
