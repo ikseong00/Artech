@@ -405,3 +405,4 @@ obj/
 ios
 AuthKey_*.p8
 *.mobileprovision
+*.json
