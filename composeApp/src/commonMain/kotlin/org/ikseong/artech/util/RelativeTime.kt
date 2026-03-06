@@ -18,11 +18,10 @@ fun relativeTimeString(instant: Instant): String {
     val days = durationMs / 86_400_000
 
     return when {
-        days > 30 -> formatDate(instant)
         minutes < 1 -> "방금 전"
         hours < 1 -> "${minutes}분 전"
         days < 1 -> "${hours}시간 전"
-        days < 7 -> "${days}일 전"
-        else -> "${days / 7}주 전"
+        days <= 10 -> "${days}일 전"
+        else -> formatDate(instant)
     }
 }

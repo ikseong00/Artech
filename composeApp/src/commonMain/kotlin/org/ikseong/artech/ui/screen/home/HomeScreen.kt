@@ -181,6 +181,7 @@ fun HomeScreen(
                             article = article,
                             onClick = { onArticleClick(article.id, article.link) },
                             modifier = Modifier.padding(horizontal = 16.dp),
+                            isNew = uiState.lastVisitTime?.let { article.displayDate > it } ?: false,
                         )
                     }
 

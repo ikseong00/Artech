@@ -18,7 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Info
@@ -62,8 +62,8 @@ fun SettingsScreen(
 
     if (showDeleteFavoritesDialog) {
         DeleteConfirmDialog(
-            title = "스크랩 전체 삭제",
-            message = "모든 스크랩을 삭제하시겠습니까?",
+            title = "좋아요 전체 삭제",
+            message = "모든 좋아요를 삭제하시겠습니까?",
             onConfirm = {
                 viewModel.deleteAllFavorites()
                 showDeleteFavoritesDialog = false
@@ -122,11 +122,11 @@ fun SettingsScreen(
 
             SettingsSectionHeader(title = "데이터 관리")
             SettingsItem(
-                icon = Icons.Filled.Bookmark,
+                icon = Icons.Filled.Favorite,
                 iconBackgroundColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f),
                 iconTint = MaterialTheme.colorScheme.error,
-                title = "스크랩 전체 삭제",
-                description = "저장된 모든 스크랩을 삭제합니다",
+                title = "좋아요 전체 삭제",
+                description = "저장된 모든 좋아요를 삭제합니다",
                 onClick = { showDeleteFavoritesDialog = true },
             )
             SettingsItem(

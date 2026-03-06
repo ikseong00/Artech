@@ -7,15 +7,18 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.ikseong.artech.data.model.ArticleCategory
 import org.ikseong.artech.data.repository.ArticleRepository
+import org.ikseong.artech.data.repository.SettingsRepository
 import kotlin.coroutines.cancellation.CancellationException
 
 class HomeViewModel(
     private val articleRepository: ArticleRepository,
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -28,7 +31,12 @@ class HomeViewModel(
     private var loadJob: Job? = null
 
     init {
-        loadArticles()
+        viewModelScope.launch {
+            val lastVisit = settingsRepository.lastVisitTime.first()
+            _uiState.update { it.copy(lastVisitTime = lastVisit) }
+            settingsRepository.updateLastVisitTime()
+            loadArticles()
+        }
     }
 
     fun loadArticles() {
@@ -74,7 +82,7 @@ class HomeViewModel(
                 val articles = fetchArticles(offset = currentPage * ArticleRepository.DEFAULT_PAGE_SIZE)
                 _uiState.update {
                     it.copy(
-                        articles = it.articles + articles,
+                        articles = (it.articles + articles).distinctBy { a -> a.id },
                         isLoadingMore = false,
                         hasMorePages = articles.size >= ArticleRepository.DEFAULT_PAGE_SIZE,
                     )
