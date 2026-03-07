@@ -79,7 +79,7 @@ fun ArticleCard(
                     ) {
                         if (article.category != null) {
                             Text(
-                                text = article.category.displayName.uppercase(),
+                                text = article.category.uppercase(),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,

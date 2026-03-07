@@ -7,7 +7,7 @@ data class Article(
     val title: String,
     val link: String,
     val summary: String?,
-    val category: ArticleCategory?,
+    val category: String?,
     val blogSource: String,
     val publishedAt: Instant?,
     val createdAt: Instant?,
