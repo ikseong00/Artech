@@ -34,7 +34,7 @@ class HomeViewModel(
             val lastVisit = settingsRepository.lastVisitTime.first()
             _uiState.update { it.copy(lastVisitTime = lastVisit) }
             settingsRepository.updateLastVisitTime()
-            loadCategories()
+            launch { loadCategories() }
             loadArticles()
         }
     }
@@ -43,6 +43,8 @@ class HomeViewModel(
         try {
             val categories = articleRepository.getCategories()
             _uiState.update { it.copy(categories = categories) }
+        } catch (_: CancellationException) {
+            throw CancellationException()
         } catch (_: Exception) {
             // 카테고리 로딩 실패 시 빈 목록 유지
         }

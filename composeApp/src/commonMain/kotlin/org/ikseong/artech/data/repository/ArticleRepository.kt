@@ -2,7 +2,10 @@ package org.ikseong.artech.data.repository
 
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import org.ikseong.artech.data.model.Article
 import org.ikseong.artech.data.model.ArticleDto
 import org.ikseong.artech.data.model.toArticle
@@ -11,7 +14,7 @@ class ArticleRepository(private val client: SupabaseClient) {
 
     suspend fun getCategories(): List<String> {
         return client.from(TABLE_NAME)
-            .select(columns = io.github.jan.supabase.postgrest.query.Columns.list("primary_category"))
+            .select(columns = Columns.list("primary_category"))
             .decodeList<CategoryResult>()
             .mapNotNull { it.primaryCategory }
             .distinct()
@@ -77,9 +80,9 @@ class ArticleRepository(private val client: SupabaseClient) {
             ?.toArticle()
     }
 
-    @kotlinx.serialization.Serializable
+    @Serializable
     private data class CategoryResult(
-        @kotlinx.serialization.SerialName("primary_category")
+        @SerialName("primary_category")
         val primaryCategory: String? = null,
     )
 
