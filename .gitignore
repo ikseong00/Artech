@@ -49,9 +49,11 @@ render.experimental.xml
 # Keystore files
 *.jks
 *.keystore
+keystore.properties
 
 # Google Services (e.g. APIs or Firebase)
-google-services.json
+composeApp/google-services.json
+GoogleService-Info.plist
 
 # Android Profiling
 *.hprof
@@ -259,7 +261,6 @@ iOSInjectionProject/
 ### SwiftPackageManager ###
 Packages
 xcuserdata
-*.xcodeproj
 
 
 ### SwiftPM ###
@@ -396,3 +397,12 @@ obj/
 # Claude (로컬 설정만 제외)
 .claude/settings.local.json
 .claude/worktrees/
+/keystore.properties
+
+.claude/TODO.md
+
+# Sensitive credentials
+ios
+AuthKey_*.p8
+*.mobileprovision
+*.json

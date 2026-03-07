@@ -1,0 +1,7 @@
+## This file must *NOT* be checked into Version Control Systems,
+# as it contains information specific to your local configuration.
+#
+# Copy this file as 'local.properties' and fill in your values.
+sdk.dir=/path/to/your/Android/Sdk
+supabase.url=YOUR_SUPABASE_URL
+supabase.key=YOUR_SUPABASE_ANON_KEY

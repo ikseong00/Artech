@@ -157,6 +157,16 @@
 - 애니메이션 전환
 - Depends on: #9, #11, #13, #14, #16
 
+### #34: 전체 화면 리디자인 (완료)
+
+- HistoryScreen 날짜별 그룹핑 (오늘/어제/이번 주/이전)
+- SettingsScreen 아이콘 추가 (Material Icons) + 저작권 표시
+- ArticleCard에 summary 텍스트 1줄 표시
+- FavoriteScreen, HistoryScreen Empty State 개선 (아이콘 + 설명 + CTA 버튼)
+- EmptyState 공통 컴포넌트 추출
+- HistoryArticle 모델 추가 (readAt 정보 보존)
+- Depends on: #13, #14, #16
+
 ---
 
 ## 의존성 다이어그램 (요약)

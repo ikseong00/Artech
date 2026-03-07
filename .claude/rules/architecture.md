@@ -13,10 +13,10 @@ Screen (Composable) → ViewModel (StateFlow) → Repository → DataSource (Rem
 
 ## 패키지 구조
 
-`composeApp/src/commonMain/kotlin/org/ikseong/devnews/` 기준:
+`composeApp/src/commonMain/kotlin/org/ikseong/artech/` 기준:
 
 ```
-org.ikseong.devnews/
+org.ikseong.artech/
 ├── di/              → Koin 모듈 정의
 ├── navigation/      → NavHost, Route sealed interface
 ├── ui/
