@@ -113,6 +113,7 @@ fun FavoriteScreen(
                     CategoryFilterRow(
                         selectedCategory = uiState.selectedCategory,
                         onCategorySelected = viewModel::selectCategory,
+                        categories = uiState.categories,
                     )
                 }
 

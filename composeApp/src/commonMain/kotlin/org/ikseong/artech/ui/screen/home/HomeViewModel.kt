@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.ikseong.artech.data.model.ArticleCategory
 import org.ikseong.artech.data.repository.ArticleRepository
 import org.ikseong.artech.data.repository.SettingsRepository
 import kotlin.coroutines.cancellation.CancellationException
@@ -35,7 +34,17 @@ class HomeViewModel(
             val lastVisit = settingsRepository.lastVisitTime.first()
             _uiState.update { it.copy(lastVisitTime = lastVisit) }
             settingsRepository.updateLastVisitTime()
+            loadCategories()
             loadArticles()
+        }
+    }
+
+    private suspend fun loadCategories() {
+        try {
+            val categories = articleRepository.getCategories()
+            _uiState.update { it.copy(categories = categories) }
+        } catch (_: Exception) {
+            // 카테고리 로딩 실패 시 빈 목록 유지
         }
     }
 
@@ -98,7 +107,7 @@ class HomeViewModel(
         }
     }
 
-    fun selectCategory(category: ArticleCategory?) {
+    fun selectCategory(category: String?) {
         if (_uiState.value.selectedCategory == category) return
         _uiState.update { it.copy(selectedCategory = category) }
         loadArticles()

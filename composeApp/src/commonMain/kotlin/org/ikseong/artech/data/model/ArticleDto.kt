@@ -10,7 +10,7 @@ data class ArticleDto(
     val link: String,
     val summary: String? = null,
     @SerialName("primary_category")
-    val category: ArticleCategory? = null,
+    val category: String? = null,
     @SerialName("blog_source")
     val blogSource: String,
     @SerialName("published_at")

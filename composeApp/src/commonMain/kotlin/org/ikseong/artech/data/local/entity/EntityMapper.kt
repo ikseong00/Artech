@@ -3,7 +3,6 @@ package org.ikseong.artech.data.local.entity
 import kotlinx.datetime.Instant
 import kotlin.time.Clock
 import org.ikseong.artech.data.model.Article
-import org.ikseong.artech.data.model.ArticleCategory
 import org.ikseong.artech.data.model.HistoryArticle
 
 fun Article.toFavoriteEntity(): FavoriteEntity = FavoriteEntity(
@@ -11,7 +10,7 @@ fun Article.toFavoriteEntity(): FavoriteEntity = FavoriteEntity(
     title = title,
     link = link,
     summary = summary,
-    category = category?.name,
+    category = category,
     blogSource = blogSource,
     publishedAt = publishedAt?.toEpochMilliseconds(),
     createdAt = createdAt?.toEpochMilliseconds(),
@@ -24,9 +23,7 @@ fun FavoriteEntity.toArticle(): Article = Article(
     title = title,
     link = link,
     summary = summary,
-    category = category?.let { name ->
-        ArticleCategory.entries.find { it.name == name }
-    },
+    category = category,
     blogSource = blogSource,
     publishedAt = publishedAt?.let { Instant.fromEpochMilliseconds(it) },
     createdAt = createdAt?.let { Instant.fromEpochMilliseconds(it) },
@@ -38,7 +35,7 @@ fun Article.toReadHistoryEntity(): ReadHistoryEntity = ReadHistoryEntity(
     title = title,
     link = link,
     summary = summary,
-    category = category?.name,
+    category = category,
     blogSource = blogSource,
     publishedAt = publishedAt?.toEpochMilliseconds(),
     createdAt = createdAt?.toEpochMilliseconds(),
@@ -51,9 +48,7 @@ fun ReadHistoryEntity.toArticle(): Article = Article(
     title = title,
     link = link,
     summary = summary,
-    category = category?.let { name ->
-        ArticleCategory.entries.find { it.name == name }
-    },
+    category = category,
     blogSource = blogSource,
     publishedAt = publishedAt?.let { Instant.fromEpochMilliseconds(it) },
     createdAt = createdAt?.let { Instant.fromEpochMilliseconds(it) },

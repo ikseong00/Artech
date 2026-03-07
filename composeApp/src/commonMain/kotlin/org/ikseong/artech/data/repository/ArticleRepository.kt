@@ -4,14 +4,23 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Order
 import org.ikseong.artech.data.model.Article
-import org.ikseong.artech.data.model.ArticleCategory
 import org.ikseong.artech.data.model.ArticleDto
 import org.ikseong.artech.data.model.toArticle
 
 class ArticleRepository(private val client: SupabaseClient) {
 
+    suspend fun getCategories(): List<String> {
+        return client.from(TABLE_NAME)
+            .select(columns = io.github.jan.supabase.postgrest.query.Columns.list("primary_category"))
+            .decodeList<CategoryResult>()
+            .mapNotNull { it.primaryCategory }
+            .distinct()
+            .filter { it != EXCLUDED_CATEGORY }
+            .sorted()
+    }
+
     suspend fun getArticles(
-        category: ArticleCategory? = null,
+        category: String? = null,
         offset: Int = 0,
         limit: Int = DEFAULT_PAGE_SIZE,
     ): List<Article> {
@@ -19,7 +28,7 @@ class ArticleRepository(private val client: SupabaseClient) {
             .select {
                 filter {
                     if (category != null) {
-                        eq("primary_category", category.displayName)
+                        eq("primary_category", category)
                     } else {
                         neq("primary_category", EXCLUDED_CATEGORY)
                     }
@@ -33,7 +42,7 @@ class ArticleRepository(private val client: SupabaseClient) {
 
     suspend fun searchArticles(
         keyword: String,
-        category: ArticleCategory? = null,
+        category: String? = null,
         offset: Int = 0,
         limit: Int = DEFAULT_PAGE_SIZE,
     ): List<Article> {
@@ -41,7 +50,7 @@ class ArticleRepository(private val client: SupabaseClient) {
             .select {
                 filter {
                     if (category != null) {
-                        eq("primary_category", category.displayName)
+                        eq("primary_category", category)
                     } else {
                         neq("primary_category", EXCLUDED_CATEGORY)
                     }
@@ -67,6 +76,12 @@ class ArticleRepository(private val client: SupabaseClient) {
             .firstOrNull()
             ?.toArticle()
     }
+
+    @kotlinx.serialization.Serializable
+    private data class CategoryResult(
+        @kotlinx.serialization.SerialName("primary_category")
+        val primaryCategory: String? = null,
+    )
 
     companion object {
         private const val TABLE_NAME = "tech_blog_articles"

@@ -82,6 +82,7 @@ fun HomeScreen(
         CategoryFilterRow(
             selectedCategory = uiState.selectedCategory,
             onCategorySelected = viewModel::selectCategory,
+            categories = uiState.categories,
         )
 
         Spacer(modifier = Modifier.height(8.dp))

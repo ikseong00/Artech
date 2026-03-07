@@ -29,15 +29,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import org.ikseong.artech.data.model.ArticleCategory
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CategoryFilterRow(
-    selectedCategory: ArticleCategory?,
-    onCategorySelected: (ArticleCategory?) -> Unit,
+    selectedCategory: String?,
+    onCategorySelected: (String?) -> Unit,
     modifier: Modifier = Modifier,
-    categoryOrder: List<ArticleCategory> = ArticleCategory.entries.filter { it != ArticleCategory.Hiring },
+    categories: List<String> = emptyList(),
 ) {
     var isExpanded by remember { mutableStateOf(false) }
 
@@ -60,7 +59,7 @@ fun CategoryFilterRow(
                         selected = selectedCategory == null,
                         onClick = { onCategorySelected(null) },
                     )
-                    categoryOrder.forEach { category ->
+                    categories.forEach { category ->
                         CategoryChip(
                             category = category,
                             selected = category == selectedCategory,
@@ -95,8 +94,8 @@ fun CategoryFilterRow(
                         )
                     }
                     items(
-                        items = categoryOrder,
-                        key = { it.name },
+                        items = categories,
+                        key = { it },
                     ) { category ->
                         CategoryChip(
                             category = category,
@@ -143,7 +142,7 @@ private fun AllChip(
 
 @Composable
 private fun CategoryChip(
-    category: ArticleCategory,
+    category: String,
     selected: Boolean,
     onClick: () -> Unit,
 ) {
@@ -152,7 +151,7 @@ private fun CategoryChip(
         onClick = onClick,
         label = {
             Text(
-                text = category.displayName,
+                text = category,
                 style = MaterialTheme.typography.labelMedium,
             )
         },

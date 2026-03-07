@@ -198,7 +198,7 @@ fun DetailScreen(
 
                                     if (art.category != null) {
                                         Text(
-                                            text = art.category.displayName,
+                                            text = art.category,
                                             style = MaterialTheme.typography.labelSmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             modifier = Modifier
