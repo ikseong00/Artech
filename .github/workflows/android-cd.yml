@@ -46,6 +46,9 @@ jobs:
           EOF
 
       - name: Build Release AAB
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: ./gradlew :composeApp:bundleRelease --stacktrace
 
       - name: Upload to Play Store

@@ -51,6 +51,7 @@ kotlin {
 
             // Supabase
             implementation(libs.supabase.postgrest)
+            implementation(libs.supabase.auth)
 
             // Koin
             implementation(libs.koin.core)
@@ -92,8 +93,8 @@ android {
         applicationId = "org.ikseong.artech"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 4
-        versionName = "1.0.2"
+        versionCode = 5
+        versionName = "1.0.3"
     }
     packaging {
         resources {
@@ -153,7 +154,7 @@ buildkonfig {
         if (file.exists()) {
             file.inputStream().use { properties.load(it) }
         }
-        buildConfigField(STRING, "SUPABASE_URL", properties.getProperty("supabase.url", ""))
-        buildConfigField(STRING, "SUPABASE_KEY", properties.getProperty("supabase.key", ""))
+        buildConfigField(STRING, "SUPABASE_URL", System.getenv("SUPABASE_URL") ?: properties.getProperty("supabase.url", ""))
+        buildConfigField(STRING, "SUPABASE_KEY", System.getenv("SUPABASE_KEY") ?: properties.getProperty("supabase.key", ""))
     }
 }

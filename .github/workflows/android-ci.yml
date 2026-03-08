@@ -51,4 +51,7 @@ jobs:
           echo "$GOOGLE_SERVICES_JSON" | base64 --decode > composeApp/google-services.json
 
       - name: Build Android Debug
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: ./gradlew :composeApp:assembleDebug --stacktrace
