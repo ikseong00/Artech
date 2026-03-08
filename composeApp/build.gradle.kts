@@ -154,7 +154,7 @@ buildkonfig {
         if (file.exists()) {
             file.inputStream().use { properties.load(it) }
         }
-        buildConfigField(STRING, "SUPABASE_URL", properties.getProperty("supabase.url", ""))
-        buildConfigField(STRING, "SUPABASE_KEY", properties.getProperty("supabase.key", ""))
+        buildConfigField(STRING, "SUPABASE_URL", System.getenv("SUPABASE_URL") ?: properties.getProperty("supabase.url", ""))
+        buildConfigField(STRING, "SUPABASE_KEY", System.getenv("SUPABASE_KEY") ?: properties.getProperty("supabase.key", ""))
     }
 }
