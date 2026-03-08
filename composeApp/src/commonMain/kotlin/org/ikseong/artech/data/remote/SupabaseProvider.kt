@@ -1,6 +1,7 @@
 package org.ikseong.artech.data.remote
 
 import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import org.ikseong.artech.BuildKonfig
@@ -12,5 +13,6 @@ object SupabaseProvider {
         supabaseKey = BuildKonfig.SUPABASE_KEY,
     ) {
         install(Postgrest)
+        install(Auth)
     }
 }
