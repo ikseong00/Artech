@@ -14,9 +14,10 @@ class AuthRepository(
     suspend fun signInAnonymously(): Result<Unit> {
         return runCatching {
             supabase.auth.signInAnonymously()
-            val session = supabase.auth.currentSessionOrNull()!!
+            val session = supabase.auth.currentSessionOrNull()
+                ?: error("Anonymous sign-in succeeded but session is null")
             sessionManager.saveSession(
-                userId = session.user!!.id,
+                userId = session.user?.id ?: error("Session has no user"),
                 accessToken = session.accessToken,
                 refreshToken = session.refreshToken,
             )
