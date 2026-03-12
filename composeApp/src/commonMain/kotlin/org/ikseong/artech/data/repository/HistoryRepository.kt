@@ -13,6 +13,9 @@ class HistoryRepository(private val readHistoryDao: ReadHistoryDao) {
     fun getAllWithReadAt(): Flow<List<HistoryArticle>> =
         readHistoryDao.getAll().map { entities -> entities.map { it.toHistoryArticle() } }
 
+    fun getReadArticleIds(): Flow<Set<Long>> =
+        readHistoryDao.getAllReadArticleIds().map { it.toSet() }
+
     suspend fun record(article: Article) {
         readHistoryDao.upsert(article.toReadHistoryEntity())
     }

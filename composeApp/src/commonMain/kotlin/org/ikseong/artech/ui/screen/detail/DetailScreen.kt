@@ -103,7 +103,7 @@ fun DetailScreen(
     if (showFeedbackSheet) {
         FeedbackBottomSheet(
             isSubmitting = feedbackState is FeedbackState.Submitting,
-            onSubmit = { reason -> viewModel.submitFeedback(reason) },
+            onSubmit = { reason, description -> viewModel.submitFeedback(reason, description) },
             onDismiss = {
                 showFeedbackSheet = false
                 viewModel.resetFeedbackState()
@@ -228,8 +228,14 @@ fun DetailScreen(
                     modifier = Modifier.fillMaxSize(),
                     onScrollDirectionChanged = { direction ->
                         when (direction) {
-                            ScrollDirection.DOWN -> isHeaderVisible = false
-                            ScrollDirection.UP -> isHeaderVisible = true
+                            ScrollDirection.DOWN -> {
+                                isHeaderVisible = false
+                                viewModel.onUserScrolled()
+                            }
+                            ScrollDirection.UP -> {
+                                isHeaderVisible = true
+                                viewModel.onUserScrolled()
+                            }
                             ScrollDirection.NONE -> {}
                         }
                     },

@@ -3,7 +3,7 @@ package org.ikseong.artech.ui.screen.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.ikseong.artech.data.model.ThemeMode
@@ -17,13 +17,19 @@ class SettingsViewModel(
     private val historyRepository: HistoryRepository,
 ) : ViewModel() {
 
-    val uiState = settingsRepository.themeMode
-        .map { SettingsUiState(themeMode = it) }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = SettingsUiState(),
+    val uiState = combine(
+        settingsRepository.themeMode,
+        settingsRepository.scrollRestorationEnabled,
+    ) { themeMode, scrollRestoration ->
+        SettingsUiState(
+            themeMode = themeMode,
+            scrollRestorationEnabled = scrollRestoration,
         )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = SettingsUiState(),
+    )
 
     fun setThemeMode(mode: ThemeMode) {
         viewModelScope.launch {
@@ -40,6 +46,12 @@ class SettingsViewModel(
     fun deleteAllHistory() {
         viewModelScope.launch {
             historyRepository.deleteAll()
+        }
+    }
+
+    fun setScrollRestorationEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setScrollRestorationEnabled(enabled)
         }
     }
 }

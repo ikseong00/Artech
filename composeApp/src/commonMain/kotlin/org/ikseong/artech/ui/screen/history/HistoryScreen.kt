@@ -1,11 +1,13 @@
 package org.ikseong.artech.ui.screen.history
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
@@ -17,16 +19,21 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 import org.ikseong.artech.ui.component.ArticleCard
 import org.ikseong.artech.ui.component.EmptyState
+import org.ikseong.artech.ui.component.ScrollToTopFab
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,6 +44,11 @@ fun HistoryScreen(
     viewModel: HistoryViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    val showScrollToTop by remember {
+        derivedStateOf { listState.firstVisibleItemIndex > 0 }
+    }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     if (showDeleteDialog) {
@@ -92,39 +104,54 @@ fun HistoryScreen(
                     .padding(innerPadding),
             )
         } else {
-            LazyColumn(
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding),
-                contentPadding = PaddingValues(bottom = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                uiState.groupedArticles.forEach { group ->
-                    item(key = "header_${group.label}") {
-                        Text(
-                            text = group.label,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp),
-                        )
-                    }
-                    items(
-                        items = group.articles,
-                        key = { it.article.id },
-                    ) { historyArticle ->
-                        ArticleCard(
-                            article = historyArticle.article,
-                            onClick = {
-                                onArticleClick(
-                                    historyArticle.article.id,
-                                    historyArticle.article.link,
-                                )
-                            },
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                        )
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    uiState.groupedArticles.forEach { group ->
+                        item(key = "header_${group.label}") {
+                            Text(
+                                text = group.label,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 4.dp),
+                            )
+                        }
+                        items(
+                            items = group.articles,
+                            key = { it.article.id },
+                        ) { historyArticle ->
+                            ArticleCard(
+                                article = historyArticle.article,
+                                onClick = {
+                                    onArticleClick(
+                                        historyArticle.article.id,
+                                        historyArticle.article.link,
+                                    )
+                                },
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                            )
+                        }
                     }
                 }
+
+                ScrollToTopFab(
+                    visible = showScrollToTop,
+                    onClick = {
+                        coroutineScope.launch { listState.animateScrollToItem(0) }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp),
+                )
             }
         }
     }
