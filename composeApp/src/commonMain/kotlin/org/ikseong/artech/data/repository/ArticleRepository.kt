@@ -14,7 +14,9 @@ class ArticleRepository(private val client: SupabaseClient) {
 
     suspend fun getCategories(): List<String> {
         return client.from(TABLE_NAME)
-            .select(columns = Columns.list("primary_category"))
+            .select(columns = Columns.list("primary_category")) {
+                limit(count = 10000)
+            }
             .decodeList<CategoryResult>()
             .mapNotNull { it.primaryCategory }
             .distinct()

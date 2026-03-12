@@ -7,9 +7,9 @@ import org.ikseong.artech.data.model.FeedbackReason
 
 class FeedbackRepository(private val client: SupabaseClient) {
 
-    suspend fun submitFeedback(articleId: Long, reason: FeedbackReason) {
+    suspend fun submitFeedback(articleId: Long, reason: FeedbackReason, description: String? = null) {
         client.from(TABLE_NAME).insert(
-            ArticleFeedbackDto(articleId = articleId, reason = reason)
+            ArticleFeedbackDto(articleId = articleId, reason = reason, description = description)
         )
     }
 

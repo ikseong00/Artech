@@ -12,12 +12,14 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.ikseong.artech.data.repository.ArticleRepository
+import org.ikseong.artech.data.repository.HistoryRepository
 import org.ikseong.artech.data.repository.SettingsRepository
 import kotlin.coroutines.cancellation.CancellationException
 
 class HomeViewModel(
     private val articleRepository: ArticleRepository,
     private val settingsRepository: SettingsRepository,
+    private val historyRepository: HistoryRepository,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -35,6 +37,11 @@ class HomeViewModel(
             _uiState.update { it.copy(lastVisitTime = lastVisit) }
             settingsRepository.updateLastVisitTime()
             launch { loadCategories() }
+            launch {
+                historyRepository.getReadArticleIds().collect { ids ->
+                    _uiState.update { it.copy(readArticleIds = ids) }
+                }
+            }
             loadArticles()
         }
     }
@@ -109,11 +116,36 @@ class HomeViewModel(
         }
     }
 
+    fun toggleUnreadFilter() {
+        _uiState.update { it.copy(showUnreadOnly = !it.showUnreadOnly) }
+    }
+
     fun selectCategory(category: String?) {
         if (_uiState.value.selectedCategory == category) return
         _uiState.update { it.copy(selectedCategory = category) }
         loadArticles()
         _uiEffect.trySend(HomeUiEffect.ScrollToTop)
+    }
+
+    fun saveScrollPosition(index: Int, offset: Int) {
+        viewModelScope.launch {
+            settingsRepository.saveScrollPosition(index, offset)
+        }
+    }
+
+    suspend fun getSavedScrollPosition(): Pair<Int, Int> =
+        settingsRepository.getScrollPosition()
+
+    suspend fun isScrollRestorationEnabled(): Boolean =
+        settingsRepository.scrollRestorationEnabled.first()
+
+    suspend fun isScrollPopupShown(): Boolean =
+        settingsRepository.scrollPopupShown.first()
+
+    fun onScrollRestorationDecided(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setScrollRestorationEnabled(enabled)
+        }
     }
 
     private suspend fun fetchArticles(offset: Int) =

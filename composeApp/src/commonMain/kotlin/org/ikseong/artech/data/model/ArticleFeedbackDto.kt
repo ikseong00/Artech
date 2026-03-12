@@ -7,4 +7,5 @@ import kotlinx.serialization.Serializable
 data class ArticleFeedbackDto(
     @SerialName("article_id") val articleId: Long,
     val reason: FeedbackReason,
+    val description: String? = null,
 )

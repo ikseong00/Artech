@@ -4,6 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -50,13 +52,23 @@ class DetailViewModel(
         loadArticle()
     }
 
+    private var readTimerJob: Job? = null
+    private var isMarkedAsRead = false
+
     private fun loadArticle() {
         viewModelScope.launch {
             val article = articleRepository.getArticle(detail.articleId)
             _article.value = article
-            if (article != null) {
-                historyRepository.record(article)
-            }
+        }
+    }
+
+    fun onUserScrolled() {
+        if (readTimerJob != null || isMarkedAsRead) return
+        readTimerJob = viewModelScope.launch {
+            delay(20_000L)
+            val article = _article.value ?: return@launch
+            historyRepository.record(article)
+            isMarkedAsRead = true
         }
     }
 
@@ -70,7 +82,7 @@ class DetailViewModel(
         }
     }
 
-    fun submitFeedback(reason: FeedbackReason) {
+    fun submitFeedback(reason: FeedbackReason, description: String? = null) {
         val articleId = _article.value?.id
         if (articleId == null) {
             _feedbackState.value = FeedbackState.Error("아티클을 찾을 수 없습니다")
@@ -80,7 +92,7 @@ class DetailViewModel(
         _feedbackState.value = FeedbackState.Submitting
         viewModelScope.launch {
             try {
-                feedbackRepository.submitFeedback(articleId, reason)
+                feedbackRepository.submitFeedback(articleId, reason, description)
                 _feedbackState.value = FeedbackState.Success
             } catch (e: Exception) {
                 _feedbackState.value = FeedbackState.Error(e.message ?: "피드백 전송에 실패했습니다")
