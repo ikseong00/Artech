@@ -1,6 +1,7 @@
 package org.ikseong.artech.ui.screen.favorite
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -21,16 +22,21 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 import org.ikseong.artech.ui.component.ArticleCard
 import org.ikseong.artech.ui.component.CategoryFilterRow
 import org.ikseong.artech.ui.component.EmptyState
+import org.ikseong.artech.ui.component.ScrollToTopFab
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -42,6 +48,10 @@ fun FavoriteScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    val showScrollToTop by remember {
+        derivedStateOf { listState.firstVisibleItemIndex > 0 }
+    }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.selectedCategory) {
@@ -101,34 +111,48 @@ fun FavoriteScreen(
                     .padding(innerPadding),
             )
         } else {
-            LazyColumn(
-                state = listState,
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding),
-                contentPadding = PaddingValues(bottom = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                item(key = "category_filter") {
-                    CategoryFilterRow(
-                        selectedCategory = uiState.selectedCategory,
-                        onCategorySelected = viewModel::selectCategory,
-                        categories = uiState.categories,
-                    )
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    item(key = "category_filter") {
+                        CategoryFilterRow(
+                            selectedCategory = uiState.selectedCategory,
+                            onCategorySelected = viewModel::selectCategory,
+                            categories = uiState.categories,
+                        )
+                    }
+
+                    items(
+                        items = uiState.articles,
+                        key = { it.id },
+                    ) { article ->
+                        ArticleCard(
+                            article = article,
+                            onClick = { onArticleClick(article.id, article.link) },
+                            isFavorite = true,
+                            onToggleFavorite = { viewModel.toggleFavorite(article) },
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                        )
+                    }
                 }
 
-                items(
-                    items = uiState.articles,
-                    key = { it.id },
-                ) { article ->
-                    ArticleCard(
-                        article = article,
-                        onClick = { onArticleClick(article.id, article.link) },
-                        isFavorite = true,
-                        onToggleFavorite = { viewModel.toggleFavorite(article) },
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                    )
-                }
+                ScrollToTopFab(
+                    visible = showScrollToTop,
+                    onClick = {
+                        coroutineScope.launch { listState.animateScrollToItem(0) }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp),
+                )
             }
         }
     }

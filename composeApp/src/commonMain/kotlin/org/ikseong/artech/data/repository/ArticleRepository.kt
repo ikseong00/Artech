@@ -2,8 +2,8 @@ package org.ikseong.artech.data.repository
 
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
-import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
+import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.ikseong.artech.data.model.Article
@@ -13,13 +13,10 @@ import org.ikseong.artech.data.model.toArticle
 class ArticleRepository(private val client: SupabaseClient) {
 
     suspend fun getCategories(): List<String> {
-        return client.from(TABLE_NAME)
-            .select(columns = Columns.list("primary_category"))
+        return client.postgrest.rpc("get_distinct_categories")
             .decodeList<CategoryResult>()
             .mapNotNull { it.primaryCategory }
-            .distinct()
             .filter { it != EXCLUDED_CATEGORY }
-            .sorted()
     }
 
     suspend fun getArticles(

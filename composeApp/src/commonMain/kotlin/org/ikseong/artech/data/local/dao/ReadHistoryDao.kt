@@ -16,6 +16,9 @@ interface ReadHistoryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(entity: ReadHistoryEntity)
 
+    @Query("SELECT articleId FROM read_history")
+    fun getAllReadArticleIds(): Flow<List<Long>>
+
     @Query("DELETE FROM read_history")
     suspend fun deleteAll()
 }
