@@ -40,7 +40,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import org.ikseong.artech.data.model.Article
-import org.ikseong.artech.util.relativeTimeString
+import org.ikseong.artech.util.formatDate
 
 @Composable
 fun ArticleCard(
@@ -219,7 +219,7 @@ fun ArticleCard(
             Spacer(modifier = Modifier.height(14.dp))
 
             Text(
-                text = relativeTimeString(article.displayDate),
+                text = formatDate(article.displayDate),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
