@@ -132,10 +132,7 @@ jobs:
       - name: Upload and Submit to App Store
         run: |
           IPA_PATH=$(find $RUNNER_TEMP/iosApp -name '*.ipa' | head -1)
-
-          fastlane deliver \
-            --api_key_path "$RUNNER_TEMP/api_key.json" \
-            --ipa "$IPA_PATH" \
+          COMMON_OPTS="--api_key_path $RUNNER_TEMP/api_key.json \
             --app_identifier org.ikseong.artech \
             --platform ios \
             --submit_for_review \
@@ -143,4 +140,7 @@ jobs:
             --force \
             --skip_screenshots \
             --precheck_include_in_app_purchases false \
-            --submission_information '{"export_compliance_uses_encryption": false}'
+            --submission_information {\"export_compliance_uses_encryption\":false}"
+
+          fastlane deliver --ipa "$IPA_PATH" $COMMON_OPTS \
+          || fastlane deliver --skip_binary_upload --skip_metadata $COMMON_OPTS
