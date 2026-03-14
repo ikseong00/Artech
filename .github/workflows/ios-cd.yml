@@ -142,4 +142,5 @@ jobs:
             --automatic_release \
             --force \
             --skip_screenshots \
-            --precheck_include_in_app_purchases false
+            --precheck_include_in_app_purchases false \
+            --submission_information '{"export_compliance_uses_encryption": false}'
