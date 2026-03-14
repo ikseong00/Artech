@@ -108,13 +108,38 @@ jobs:
             -exportPath $RUNNER_TEMP/iosApp \
             -exportOptionsPlist $RUNNER_TEMP/ExportOptions.plist
 
-      - name: Upload to App Store Connect
-        run: |
-          mkdir -p ~/.appstoreconnect/private_keys
-          echo "${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}" > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+      - name: Install fastlane
+        run: gem install fastlane --no-document
 
-          xcrun altool --upload-app \
-            -f $RUNNER_TEMP/iosApp/*.ipa \
-            -t ios \
-            --apiKey ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }} \
-            --apiIssuer ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+      - name: Create App Store Connect API key
+        env:
+          ASC_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+        run: |
+          jq -n \
+            --arg key_id "$ASC_KEY_ID" \
+            --arg issuer_id "$ASC_ISSUER_ID" \
+            --arg key "$ASC_PRIVATE_KEY" \
+            '{key_id: $key_id, issuer_id: $issuer_id, key: $key, in_house: false}' \
+            > $RUNNER_TEMP/api_key.json
+
+      - name: Prepare release notes
+        run: |
+          mkdir -p fastlane/metadata/ko/
+          cp whatsnew/whatsnew-ko-KR fastlane/metadata/ko/release_notes.txt
+
+      - name: Upload and Submit to App Store
+        run: |
+          IPA_PATH=$(find $RUNNER_TEMP/iosApp -name '*.ipa' | head -1)
+
+          fastlane deliver \
+            --api_key_path "$RUNNER_TEMP/api_key.json" \
+            --ipa "$IPA_PATH" \
+            --app_identifier org.ikseong.artech \
+            --platform ios \
+            --submit_for_review \
+            --automatic_release \
+            --force \
+            --skip_screenshots \
+            --precheck_include_in_app_purchases false
