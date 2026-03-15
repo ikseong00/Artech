@@ -1,8 +1,8 @@
 package org.ikseong.artech.ui.screen.home
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,6 +43,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
@@ -73,6 +75,8 @@ fun HomeScreen(
     // 스크롤 방향 감지 → 필터 숨김/표시
     var isFilterVisible by remember { mutableStateOf(true) }
     var accumulatedDelta by remember { mutableIntStateOf(0) }
+    val density = LocalDensity.current
+    var filterHeightDp by remember { mutableStateOf(0.dp) }
     LaunchedEffect(listState) {
         var previousIndex = listState.firstVisibleItemIndex
         var previousOffset = listState.firstVisibleItemScrollOffset
@@ -174,39 +178,6 @@ fun HomeScreen(
             windowInsets = WindowInsets(0, 0, 0, 0),
         )
 
-        AnimatedVisibility(
-            visible = isFilterVisible,
-            enter = expandVertically(),
-            exit = shrinkVertically(),
-        ) {
-            Column {
-                CategoryFilterRow(
-                    selectedCategory = uiState.selectedCategory,
-                    onCategorySelected = viewModel::selectCategory,
-                    categories = uiState.categories,
-                )
-
-                Row(
-                    modifier = Modifier.padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    FilterChip(
-                        selected = uiState.showUnreadOnly,
-                        onClick = viewModel::toggleUnreadFilter,
-                        label = { Text("안 본 글만", style = MaterialTheme.typography.labelSmall) },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = if (uiState.showUnreadOnly) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                                contentDescription = null,
-                            )
-                        },
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-        }
-
         when {
             uiState.isLoading && uiState.displayArticles.isEmpty() -> {
                 Box(
@@ -256,9 +227,10 @@ fun HomeScreen(
 
             else -> {
                 Box(modifier = Modifier.fillMaxSize()) {
+                    val topPadding = if (isFilterVisible) filterHeightDp else 0.dp
                     LazyColumn(
                         state = listState,
-                        contentPadding = PaddingValues(vertical = 8.dp),
+                        contentPadding = PaddingValues(top = topPadding, bottom = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxSize(),
                     ) {
@@ -323,6 +295,50 @@ fun HomeScreen(
                                     CircularProgressIndicator()
                                 }
                             }
+                        }
+                    }
+
+                    // 필터를 LazyColumn 위에 오버레이
+                    androidx.compose.animation.AnimatedVisibility(
+                        visible = isFilterVisible,
+                        enter = expandVertically(),
+                        exit = shrinkVertically(),
+                        modifier = Modifier.align(Alignment.TopStart),
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.background)
+                                .onGloballyPositioned { coordinates ->
+                                    filterHeightDp = with(density) {
+                                        coordinates.size.height.toDp()
+                                    }
+                                },
+                        ) {
+                            CategoryFilterRow(
+                                selectedCategory = uiState.selectedCategory,
+                                onCategorySelected = viewModel::selectCategory,
+                                categories = uiState.categories,
+                            )
+
+                            Row(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                FilterChip(
+                                    selected = uiState.showUnreadOnly,
+                                    onClick = viewModel::toggleUnreadFilter,
+                                    label = { Text("안 본 글만", style = MaterialTheme.typography.labelSmall) },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = if (uiState.showUnreadOnly) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                            contentDescription = null,
+                                        )
+                                    },
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
                         }
                     }
 
