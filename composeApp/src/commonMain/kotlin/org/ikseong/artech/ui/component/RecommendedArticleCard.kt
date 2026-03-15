@@ -82,6 +82,7 @@ fun RecommendedArticleCard(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
                     maxLines = 1,
+                    modifier = Modifier,
                 )
 
                 Spacer(modifier = Modifier.height(2.dp))

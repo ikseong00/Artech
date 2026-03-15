@@ -6,6 +6,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -50,6 +51,7 @@ fun ArticleCard(
     isFavorite: Boolean? = null,
     onToggleFavorite: (() -> Unit)? = null,
     isNew: Boolean = false,
+    onBlogClick: ((String) -> Unit)? = null,
 ) {
     var isSummaryExpanded by remember { mutableStateOf(false) }
 
@@ -100,11 +102,26 @@ fun ArticleCard(
                         Text(
                             text = article.blogSource,
                             style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = if (onBlogClick != null) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
                             fontWeight = FontWeight.SemiBold,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .then(
+                                    if (onBlogClick != null) {
+                                        Modifier.clickable(
+                                            indication = null,
+                                            interactionSource = remember { MutableInteractionSource() },
+                                        ) { onBlogClick(article.blogSource) }
+                                    } else {
+                                        Modifier
+                                    },
+                                ),
                         )
 
                         if (isFavorite != null && onToggleFavorite != null) {
