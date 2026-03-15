@@ -97,7 +97,12 @@ object BlogMetaRegistry {
         ),
     )
 
-    fun getBlogMeta(blogSource: String): BlogMeta? = registry[blogSource]
+    fun getBlogMeta(blogSource: String): BlogMeta = registry[blogSource]
+        ?: BlogMeta(
+            name = blogSource,
+            url = "",
+            logoUrl = "",
+        )
 
     private fun faviconUrl(domain: String): String =
         "https://www.google.com/s2/favicons?domain=$domain&sz=128"
