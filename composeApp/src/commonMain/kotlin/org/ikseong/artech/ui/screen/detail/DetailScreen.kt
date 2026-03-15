@@ -59,9 +59,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.clickable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.clickable
 import org.ikseong.artech.ui.component.FeedbackBottomSheet
 import org.ikseong.artech.ui.component.ScrollDirection
 import org.ikseong.artech.ui.component.WebView

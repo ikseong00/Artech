@@ -6,6 +6,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -113,7 +114,10 @@ fun ArticleCard(
                                 .weight(1f)
                                 .then(
                                     if (onBlogClick != null) {
-                                        Modifier.clickable { onBlogClick(article.blogSource) }
+                                        Modifier.clickable(
+                                            indication = null,
+                                            interactionSource = remember { MutableInteractionSource() },
+                                        ) { onBlogClick(article.blogSource) }
                                     } else {
                                         Modifier
                                     },

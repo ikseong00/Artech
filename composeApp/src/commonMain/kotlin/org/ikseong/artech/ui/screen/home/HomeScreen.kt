@@ -300,7 +300,6 @@ fun HomeScreen(
                                         RecommendedArticleCard(
                                             article = article,
                                             onClick = { onArticleClick(article.id, article.link) },
-                                            onBlogClick = onBlogClick,
                                         )
                                     }
                                 }
