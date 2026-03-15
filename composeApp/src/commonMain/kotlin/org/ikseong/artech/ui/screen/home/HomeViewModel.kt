@@ -133,20 +133,14 @@ class HomeViewModel(
         }
     }
 
-    suspend fun getSavedScrollPosition(): Pair<Int, Int> =
-        settingsRepository.getScrollPosition()
-
-    suspend fun isScrollRestorationEnabled(): Boolean =
-        settingsRepository.scrollRestorationEnabled.first()
-
-    suspend fun isScrollPopupShown(): Boolean =
-        settingsRepository.scrollPopupShown.first()
-
-    fun onScrollRestorationDecided(enabled: Boolean) {
+    fun clearScrollPosition() {
         viewModelScope.launch {
-            settingsRepository.setScrollRestorationEnabled(enabled)
+            settingsRepository.clearScrollPosition()
         }
     }
+
+    suspend fun getSavedScrollPosition(): Pair<Int, Int> =
+        settingsRepository.getScrollPosition()
 
     private suspend fun fetchArticles(offset: Int) =
         articleRepository.getArticles(
