@@ -1,5 +1,8 @@
 package org.ikseong.artech.ui.screen.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,10 +37,12 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -65,6 +70,29 @@ fun HomeScreen(
         derivedStateOf { listState.firstVisibleItemIndex > 0 }
     }
     var showScrollRestorationDialog by remember { mutableStateOf(false) }
+
+    // 스크롤 방향 감지 → 필터 숨김/표시
+    var isFilterVisible by remember { mutableStateOf(true) }
+    var accumulatedDelta by remember { mutableIntStateOf(0) }
+    LaunchedEffect(listState) {
+        var previousIndex = listState.firstVisibleItemIndex
+        var previousOffset = listState.firstVisibleItemScrollOffset
+        snapshotFlow {
+            listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset
+        }.collect { (currentIndex, currentOffset) ->
+            val delta = (currentIndex - previousIndex) * 500 + (currentOffset - previousOffset)
+            accumulatedDelta = (accumulatedDelta + delta).coerceIn(-500, 500)
+
+            if (accumulatedDelta > 200) {
+                isFilterVisible = false
+            } else if (accumulatedDelta < -200 || (currentIndex == 0 && currentOffset == 0)) {
+                isFilterVisible = true
+            }
+
+            previousIndex = currentIndex
+            previousOffset = currentOffset
+        }
+    }
 
     val shouldLoadMore by remember {
         derivedStateOf {
@@ -161,30 +189,38 @@ fun HomeScreen(
             windowInsets = WindowInsets(0, 0, 0, 0),
         )
 
-        CategoryFilterRow(
-            selectedCategory = uiState.selectedCategory,
-            onCategorySelected = viewModel::selectCategory,
-            categories = uiState.categories,
-        )
-
-        Row(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        AnimatedVisibility(
+            visible = isFilterVisible,
+            enter = expandVertically(),
+            exit = shrinkVertically(),
         ) {
-            FilterChip(
-                selected = uiState.showUnreadOnly,
-                onClick = viewModel::toggleUnreadFilter,
-                label = { Text("안 본 글만", style = MaterialTheme.typography.labelSmall) },
-                leadingIcon = {
-                    Icon(
-                        imageVector = if (uiState.showUnreadOnly) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                        contentDescription = null,
-                    )
-                },
-            )
-        }
+            Column {
+                CategoryFilterRow(
+                    selectedCategory = uiState.selectedCategory,
+                    onCategorySelected = viewModel::selectCategory,
+                    categories = uiState.categories,
+                )
 
-        Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    FilterChip(
+                        selected = uiState.showUnreadOnly,
+                        onClick = viewModel::toggleUnreadFilter,
+                        label = { Text("안 본 글만", style = MaterialTheme.typography.labelSmall) },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = if (uiState.showUnreadOnly) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                contentDescription = null,
+                            )
+                        },
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+        }
 
         when {
             uiState.isLoading && uiState.displayArticles.isEmpty() -> {
