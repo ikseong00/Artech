@@ -33,6 +33,7 @@ fun RecommendedArticleCard(
     article: Article,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    onBlogClick: ((String) -> Unit)? = null,
 ) {
     Card(
         modifier = modifier
@@ -82,6 +83,11 @@ fun RecommendedArticleCard(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.primary,
                     maxLines = 1,
+                    modifier = if (onBlogClick != null) {
+                        Modifier.clickable { onBlogClick(article.blogSource) }
+                    } else {
+                        Modifier
+                    },
                 )
 
                 Spacer(modifier = Modifier.height(2.dp))

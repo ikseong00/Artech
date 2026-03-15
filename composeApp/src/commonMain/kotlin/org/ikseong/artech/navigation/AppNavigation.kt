@@ -20,6 +20,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import org.ikseong.artech.ui.screen.blog.BlogScreen
 import org.ikseong.artech.ui.screen.detail.DetailScreen
 import org.ikseong.artech.ui.screen.favorite.FavoriteScreen
 import org.ikseong.artech.ui.screen.history.HistoryScreen
@@ -33,6 +34,7 @@ fun AppNavigation() {
     val currentDestination = navBackStackEntry?.destination
 
     val isDetailScreen = currentDestination?.hasRoute(Route.Detail::class) == true
+    val isBlogScreen = currentDestination?.hasRoute(Route.Blog::class) == true
 
     val navigateToHome: () -> Unit = {
         navController.navigate(Route.Home) {
@@ -46,7 +48,7 @@ fun AppNavigation() {
 
     Scaffold(
         bottomBar = {
-            if (!isDetailScreen) {
+            if (!isDetailScreen && !isBlogScreen) {
                 val primaryColor = MaterialTheme.colorScheme.primary
 
                 NavigationBar(
@@ -99,12 +101,18 @@ fun AppNavigation() {
                     onArticleClick = { articleId, link ->
                         navController.navigate(Route.Detail(articleId = articleId, link = link))
                     },
+                    onBlogClick = { blogSource ->
+                        navController.navigate(Route.Blog(blogSource = blogSource))
+                    },
                 )
             }
             composable<Route.Favorite> {
                 FavoriteScreen(
                     onArticleClick = { articleId, link ->
                         navController.navigate(Route.Detail(articleId = articleId, link = link))
+                    },
+                    onBlogClick = { blogSource ->
+                        navController.navigate(Route.Blog(blogSource = blogSource))
                     },
                     onNavigateToHome = navigateToHome,
                 )
@@ -114,6 +122,9 @@ fun AppNavigation() {
                     onArticleClick = { articleId, link ->
                         navController.navigate(Route.Detail(articleId = articleId, link = link))
                     },
+                    onBlogClick = { blogSource ->
+                        navController.navigate(Route.Blog(blogSource = blogSource))
+                    },
                     onNavigateToHome = navigateToHome,
                 )
             }
@@ -122,6 +133,17 @@ fun AppNavigation() {
             }
             composable<Route.Detail> {
                 DetailScreen(
+                    onBack = { navController.popBackStack() },
+                    onBlogClick = { blogSource ->
+                        navController.navigate(Route.Blog(blogSource = blogSource))
+                    },
+                )
+            }
+            composable<Route.Blog> {
+                BlogScreen(
+                    onArticleClick = { articleId, link ->
+                        navController.navigate(Route.Detail(articleId = articleId, link = link))
+                    },
                     onBack = { navController.popBackStack() },
                 )
             }

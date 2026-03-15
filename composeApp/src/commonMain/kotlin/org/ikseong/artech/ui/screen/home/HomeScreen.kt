@@ -61,6 +61,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun HomeScreen(
     onArticleClick: (articleId: Long, link: String) -> Unit = { _, _ -> },
+    onBlogClick: (String) -> Unit = {},
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -299,6 +300,7 @@ fun HomeScreen(
                                         RecommendedArticleCard(
                                             article = article,
                                             onClick = { onArticleClick(article.id, article.link) },
+                                            onBlogClick = onBlogClick,
                                         )
                                     }
                                 }
@@ -323,6 +325,7 @@ fun HomeScreen(
                                 onClick = { onArticleClick(article.id, article.link) },
                                 modifier = Modifier.padding(horizontal = 16.dp),
                                 isNew = uiState.lastVisitTime?.let { article.displayDate > it } ?: false,
+                                onBlogClick = onBlogClick,
                             )
                         }
 

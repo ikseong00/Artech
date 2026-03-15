@@ -70,6 +70,7 @@ Supabase에 수집된 아티클을 카테고리별/키워드별로 조회하고,
 | Screen | 진입 경로 | 설명 |
 |--------|-----------|------|
 | `DetailScreen` | 아티클 카드 클릭 | WebView로 원문 표시 |
+| `BlogScreen` | 블로그명 클릭 | 특정 블로그 아티클 모아보기 |
 
 ---
 
@@ -243,6 +244,52 @@ Supabase에 수집된 아티클을 카테고리별/키워드별로 조회하고,
 
 ---
 
+### 2.7 BlogScreen (블로그 페이지)
+
+```
+┌─────────────────────────────────────┐
+│  [←] 토스                           │  ← TopBar (뒤로가기 + 블로그명)
+├─────────────────────────────────────┤
+│  ┌─────────────────────────────────┐│
+│  │ [로고] 토스                     ││  ← BlogInfoCard
+│  │        toss.tech 🔗             ││
+│  │        42개 아티클 · 2022 ~ 2025││
+│  └─────────────────────────────────┘│
+├─────────────────────────────────────┤  ← stickyHeader (스크롤 시 상단 고정)
+│  [전체][Android][iOS][Server][...]  │
+│  [안 본 글만]                      │
+├─────────────────────────────────────┤
+│  ┌─────────────────────────────────┐│
+│  │ 아티클 제목                     ││
+│  │ Server · 2시간 전               ││
+│  └─────────────────────────────────┘│
+│  ...                                │  ← 무한 스크롤
+├─────────────────────────────────────┤
+│  (바텀 탭 숨김)                     │
+└─────────────────────────────────────┘
+```
+
+#### 기능 명세
+
+| 기능 | 설명 |
+|------|------|
+| BlogInfoCard | 블로그 로고, 이름, URL(외부 링크), 아티클 수, 기간 |
+| 카테고리 필터 | 해당 블로그가 보유한 카테고리만 표시 (stickyHeader) |
+| 안 본 글 필터 | 읽기이력 기반 필터링 |
+| 무한 스크롤 | offset 기반 페이지네이션 |
+| 아티클 클릭 | DetailScreen으로 이동 |
+| Loading/Empty/Error | 상태 분기 처리 |
+
+#### 진입점
+
+| 위치 | 동작 |
+|------|------|
+| ArticleCard 블로그명 텍스트 | 클릭 시 BlogScreen 이동 |
+| RecommendedArticleCard 블로그명 | 클릭 시 BlogScreen 이동 |
+| DetailScreen 블로그명 텍스트 | 클릭 시 BlogScreen 이동 |
+
+---
+
 ## 3. 데이터 모델
 
 ### 3.1 Supabase 테이블: tech_blog_articles
@@ -339,7 +386,13 @@ enum class ArticleCategory {
 │     ▼           ▼           ▼                │
 │  ┌──────────────────────────────┐            │
 │  │        DetailScreen          │            │
-│  │   (아티클 카드 클릭 시)       │            │
+│  │   (아티클 카드 클릭 시)       │◄───┐       │
+│  └──────────────────────────────┘    │       │
+│     │                                │       │
+│     ▼ (블로그명 클릭)                │       │
+│  ┌──────────────────────────────┐    │       │
+│  │        BlogScreen            │────┘       │
+│  │   (블로그명 클릭 시)          │            │
 │  └──────────────────────────────┘            │
 └──────────────────────────────────────────────┘
 ```
@@ -449,6 +502,25 @@ supabase.from("tech_blog_articles")
     .select()
     .or("title.ilike.%$keyword%,summary.ilike.%$keyword%")
     .order("published_at", Order.DESCENDING)
+```
+
+### 블로그별 아티클 조회
+
+```kotlin
+supabase.from("tech_blog_articles")
+    .select()
+    .eq("blog_source", blogSource)
+    .order("published_at", Order.DESCENDING)
+    .range(from = offset.toLong(), to = (offset + limit - 1).toLong())
+```
+
+### 블로그별 카테고리 조회
+
+```kotlin
+supabase.from("tech_blog_articles")
+    .select()
+    .eq("blog_source", blogSource)
+// 결과에서 distinct primary_category 추출
 ```
 
 ---

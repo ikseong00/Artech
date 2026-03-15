@@ -157,6 +157,15 @@
 - 애니메이션 전환
 - Depends on: #9, #11, #13, #14, #16
 
+### #76: 블로그 페이지 구현
+
+- BlogMeta 모델 및 BlogMetaRegistry (16개 블로그 매핑)
+- ArticleRepository에 블로그별 쿼리 메서드 (getArticlesByBlog, getCategoriesByBlog, getBlogStats)
+- BlogScreen (stickyHeader 카테고리 필터, 안 본 글 필터, 무한 스크롤)
+- BlogInfoCard 컴포넌트 (로고, URL, 아티클 통계)
+- ArticleCard/RecommendedArticleCard/DetailScreen에 블로그명 클릭 진입점
+- Depends on: #9, #11, #13, #14
+
 ### #34: 전체 화면 리디자인 (완료)
 
 - HistoryScreen 날짜별 그룹핑 (오늘/어제/이번 주/이전)

@@ -8,6 +8,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.ikseong.artech.data.model.Article
 import org.ikseong.artech.data.model.ArticleDto
+import org.ikseong.artech.data.model.BlogStats
 import org.ikseong.artech.data.model.toArticle
 
 class ArticleRepository(private val client: SupabaseClient) {
@@ -76,6 +77,64 @@ class ArticleRepository(private val client: SupabaseClient) {
             .firstOrNull()
             ?.toArticle()
     }
+
+    suspend fun getArticlesByBlog(
+        blogSource: String,
+        category: String? = null,
+        offset: Int = 0,
+        limit: Int = DEFAULT_PAGE_SIZE,
+    ): List<Article> {
+        return client.from(TABLE_NAME)
+            .select {
+                filter {
+                    eq("blog_source", blogSource)
+                    if (category != null) {
+                        eq("primary_category", category)
+                    }
+                }
+                order("published_at", Order.DESCENDING)
+                range(offset.toLong(), (offset + limit - 1).toLong())
+            }
+            .decodeList<ArticleDto>()
+            .map { it.toArticle() }
+    }
+
+    suspend fun getCategoriesByBlog(blogSource: String): List<String> {
+        return client.from(TABLE_NAME)
+            .select(columns = io.github.jan.supabase.postgrest.query.Columns.list("primary_category")) {
+                filter { eq("blog_source", blogSource) }
+            }
+            .decodeList<CategoryResult>()
+            .mapNotNull { it.primaryCategory }
+            .distinct()
+            .filter { it != EXCLUDED_CATEGORY }
+            .sorted()
+    }
+
+    suspend fun getBlogStats(blogSource: String): BlogStats {
+        val allArticles = client.from(TABLE_NAME)
+            .select(columns = io.github.jan.supabase.postgrest.query.Columns.list("published_at", "created_at")) {
+                filter { eq("blog_source", blogSource) }
+                order("published_at", Order.ASCENDING)
+            }
+            .decodeList<BlogStatDto>()
+
+        val dates = allArticles.mapNotNull { it.publishedAt ?: it.createdAt }
+
+        return BlogStats(
+            totalCount = allArticles.size,
+            earliestDate = dates.firstOrNull()?.take(10)?.replace("-", "."),
+            latestDate = dates.lastOrNull()?.take(10)?.replace("-", "."),
+        )
+    }
+
+    @Serializable
+    private data class BlogStatDto(
+        @SerialName("published_at")
+        val publishedAt: String? = null,
+        @SerialName("created_at")
+        val createdAt: String? = null,
+    )
 
     @Serializable
     private data class CategoryResult(

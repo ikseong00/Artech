@@ -21,4 +21,7 @@ sealed interface Route {
 
     @Serializable
     data class Detail(val articleId: Long, val link: String) : Route
+
+    @Serializable
+    data class Blog(val blogSource: String) : Route
 }

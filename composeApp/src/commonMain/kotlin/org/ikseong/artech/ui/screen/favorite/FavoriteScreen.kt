@@ -43,6 +43,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun FavoriteScreen(
     onArticleClick: (articleId: Long, link: String) -> Unit,
+    onBlogClick: (String) -> Unit = {},
     onNavigateToHome: () -> Unit,
     viewModel: FavoriteViewModel = koinViewModel(),
 ) {
@@ -140,6 +141,7 @@ fun FavoriteScreen(
                             isFavorite = true,
                             onToggleFavorite = { viewModel.toggleFavorite(article) },
                             modifier = Modifier.padding(horizontal = 16.dp),
+                            onBlogClick = onBlogClick,
                         )
                     }
                 }

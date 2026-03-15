@@ -40,6 +40,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun HistoryScreen(
     onArticleClick: (articleId: Long, link: String) -> Unit,
+    onBlogClick: (String) -> Unit = {},
     onNavigateToHome: () -> Unit,
     viewModel: HistoryViewModel = koinViewModel(),
 ) {
@@ -138,6 +139,7 @@ fun HistoryScreen(
                                     )
                                 },
                                 modifier = Modifier.padding(horizontal = 16.dp),
+                                onBlogClick = onBlogClick,
                             )
                         }
                     }
