@@ -22,7 +22,6 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -115,18 +114,6 @@ fun SettingsScreen(
                     viewModel.setThemeMode(if (checked) ThemeMode.DARK else ThemeMode.LIGHT)
                 },
             )
-            SettingsToggleItem(
-                icon = Icons.Filled.Restore,
-                iconBackgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                iconTint = MaterialTheme.colorScheme.primary,
-                title = "스크롤 위치 기억",
-                description = if (uiState.scrollRestorationEnabled) "앱 재진입 시 이전 위치로 복원" else "항상 처음부터 시작",
-                checked = uiState.scrollRestorationEnabled,
-                onCheckedChange = { checked ->
-                    viewModel.setScrollRestorationEnabled(checked)
-                },
-            )
-
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),

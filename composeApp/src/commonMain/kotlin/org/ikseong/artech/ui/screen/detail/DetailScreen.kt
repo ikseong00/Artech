@@ -59,6 +59,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.clickable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import org.ikseong.artech.ui.component.FeedbackBottomSheet
@@ -73,6 +74,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun DetailScreen(
     onBack: () -> Unit,
+    onBlogClick: (String) -> Unit = {},
     viewModel: DetailViewModel = koinViewModel(),
 ) {
     val isFavorite by viewModel.isFavorite.collectAsStateWithLifecycle()
@@ -194,6 +196,7 @@ fun DetailScreen(
                                         style = MaterialTheme.typography.labelMedium,
                                         fontWeight = FontWeight.Medium,
                                         color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.clickable { onBlogClick(art.blogSource) },
                                     )
 
                                     if (art.category != null) {
