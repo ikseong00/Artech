@@ -4,6 +4,7 @@ import org.ikseong.artech.data.model.HistoryArticle
 
 data class HistoryUiState(
     val groupedArticles: List<HistoryGroup> = emptyList(),
+    val isRefreshing: Boolean = false,
 ) {
     val isEmpty: Boolean get() = groupedArticles.isEmpty()
 }
