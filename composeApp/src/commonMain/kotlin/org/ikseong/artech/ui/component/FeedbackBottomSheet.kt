@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.BrokenImage
 import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.HideImage
 import androidx.compose.material.icons.outlined.Label
 import androidx.compose.material.icons.outlined.SpeakerNotes
 import androidx.compose.material3.Checkbox
@@ -78,6 +79,7 @@ fun FeedbackBottomSheet(
                     FeedbackReason.BadSummary to Icons.Outlined.SpeakerNotes,
                     FeedbackReason.DuplicateArticle to Icons.Outlined.ContentCopy,
                     FeedbackReason.WebViewLoadFailure to Icons.Outlined.BrokenImage,
+                    FeedbackReason.ThumbnailError to Icons.Outlined.HideImage,
                 )
                 reasonItems.forEachIndexed { index, (reason, icon) ->
                     FeedbackReasonItem(

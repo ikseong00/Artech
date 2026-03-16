@@ -16,4 +16,7 @@ enum class FeedbackReason(val displayName: String) {
 
     @SerialName("webview_load_failure")
     WebViewLoadFailure("페이지 로딩 실패"),
+
+    @SerialName("thumbnail_error")
+    ThumbnailError("썸네일 오류"),
 }

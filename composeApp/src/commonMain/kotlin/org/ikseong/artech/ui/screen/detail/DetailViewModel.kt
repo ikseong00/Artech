@@ -83,6 +83,7 @@ class DetailViewModel(
     }
 
     fun submitFeedback(reasons: Set<FeedbackReason>, description: String? = null) {
+        if (reasons.isEmpty() && description.isNullOrBlank()) return
         val articleId = _article.value?.id
         if (articleId == null) {
             _feedbackState.value = FeedbackState.Error("아티클을 찾을 수 없습니다")
@@ -92,10 +93,11 @@ class DetailViewModel(
         _feedbackState.value = FeedbackState.Submitting
         viewModelScope.launch {
             try {
-                for (reason in reasons) {
-                    feedbackRepository.submitFeedback(articleId, reason, description)
-                }
-                if (reasons.isEmpty() && description != null) {
+                if (reasons.isNotEmpty()) {
+                    for (reason in reasons) {
+                        feedbackRepository.submitFeedback(articleId, reason, description)
+                    }
+                } else {
                     feedbackRepository.submitFeedback(articleId, null, description)
                 }
                 _feedbackState.value = FeedbackState.Success

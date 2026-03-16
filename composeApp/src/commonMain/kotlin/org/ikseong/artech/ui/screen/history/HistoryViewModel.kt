@@ -2,11 +2,12 @@ package org.ikseong.artech.ui.screen.history
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -17,13 +18,29 @@ class HistoryViewModel(
     private val historyRepository: HistoryRepository,
 ) : ViewModel() {
 
-    val uiState = historyRepository.getAllWithReadAt()
-        .map { articles -> HistoryUiState(groupedArticles = groupByDate(articles)) }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = HistoryUiState(),
+    private val _isRefreshing = MutableStateFlow(false)
+
+    val uiState = combine(
+        historyRepository.getAllWithReadAt(),
+        _isRefreshing,
+    ) { articles, isRefreshing ->
+        HistoryUiState(
+            groupedArticles = groupByDate(articles),
+            isRefreshing = isRefreshing,
         )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = HistoryUiState(),
+    )
+
+    fun refresh() {
+        viewModelScope.launch {
+            _isRefreshing.value = true
+            delay(500L)
+            _isRefreshing.value = false
+        }
+    }
 
     fun deleteAll() {
         viewModelScope.launch {
@@ -37,6 +54,7 @@ class HistoryViewModel(
         val timeZone = TimeZone.currentSystemDefault()
 
         return articles
+            .sortedByDescending { it.readAt }
             .groupBy { article ->
                 article.readAt.toLocalDateTime(timeZone).date
             }

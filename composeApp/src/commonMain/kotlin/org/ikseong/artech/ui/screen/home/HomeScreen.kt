@@ -323,7 +323,9 @@ fun HomeScreen(
                             .offset(y = filterOffsetDp)
                             .background(MaterialTheme.colorScheme.background)
                             .onGloballyPositioned { coordinates ->
-                                filterHeightPx = coordinates.size.height.toFloat()
+                                val newHeight = coordinates.size.height.toFloat()
+                                filterHeightPx = newHeight
+                                filterOffsetPx = filterOffsetPx.coerceIn(-newHeight, 0f)
                             },
                     ) {
                         CategoryFilterRow(
