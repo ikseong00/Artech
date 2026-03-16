@@ -35,36 +35,23 @@ class HistoryViewModel(
         if (articles.isEmpty()) return emptyList()
 
         val timeZone = TimeZone.currentSystemDefault()
-        val now = kotlin.time.Clock.System.now()
-        val today = Instant.fromEpochMilliseconds(now.toEpochMilliseconds())
-            .toLocalDateTime(timeZone).date
 
-        val groups = mutableMapOf<String, MutableList<HistoryArticle>>()
-
-        for (article in articles) {
-            val label = dateGroupLabel(article.readAt, today, timeZone)
-            groups.getOrPut(label) { mutableListOf() }.add(article)
-        }
-
-        val order = listOf("오늘", "어제", "이번 주", "이전")
-        return order.mapNotNull { label ->
-            groups[label]?.let { HistoryGroup(label = label, articles = it) }
-        }
+        return articles
+            .groupBy { article ->
+                article.readAt.toLocalDateTime(timeZone).date
+            }
+            .entries
+            .sortedByDescending { it.key }
+            .map { (date, groupArticles) ->
+                HistoryGroup(
+                    label = formatDateLabel(date),
+                    articles = groupArticles,
+                )
+            }
     }
 
-    private fun dateGroupLabel(
-        readAt: Instant,
-        today: LocalDate,
-        timeZone: TimeZone,
-    ): String {
-        val readDate = readAt.toLocalDateTime(timeZone).date
-        val daysDiff = today.toEpochDays().toLong() - readDate.toEpochDays().toLong()
-
-        return when {
-            daysDiff == 0L -> "오늘"
-            daysDiff == 1L -> "어제"
-            daysDiff < 7L -> "이번 주"
-            else -> "이전"
-        }
+    @Suppress("DEPRECATION")
+    private fun formatDateLabel(date: LocalDate): String {
+        return "${date.monthNumber}월 ${date.dayOfMonth}일"
     }
 }
