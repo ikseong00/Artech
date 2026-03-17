@@ -15,6 +15,7 @@ import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.HideImage
 import androidx.compose.material.icons.outlined.Label
 import androidx.compose.material.icons.outlined.SpeakerNotes
+import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,7 +25,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -119,21 +119,24 @@ fun FeedbackBottomSheet(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
+                Button(
+                    onClick = {
+                        onSubmit(
+                            selectedReasons,
+                            description.ifBlank { null },
+                        )
+                    },
+                    enabled = selectedReasons.isNotEmpty() || description.isNotBlank(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = MaterialTheme.shapes.medium,
                 ) {
-                    Spacer(modifier = Modifier.weight(1f))
-                    TextButton(
-                        onClick = {
-                            onSubmit(
-                                selectedReasons,
-                                description.ifBlank { null },
-                            )
-                        },
-                        enabled = selectedReasons.isNotEmpty() || description.isNotBlank(),
-                    ) {
-                        Text("전송")
-                    }
+                    Text(
+                        text = "전송",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                    )
                 }
             }
         }
@@ -151,7 +154,7 @@ private fun FeedbackReasonItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = 14.dp),
+            .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Checkbox(
