@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.ikseong.artech.data.model.BlogMetaRegistry
 import org.ikseong.artech.data.repository.ArticleRepository
 
 class BlogListViewModel(
@@ -25,11 +24,11 @@ class BlogListViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
-                val counts = articleRepository.getAllBlogArticleCounts()
-                val blogs = counts.map { (source, count) ->
+                val results = articleRepository.getAllBlogs()
+                val blogs = results.map { (meta, count) ->
                     BlogListItem(
-                        blogSource = source,
-                        blogMeta = BlogMetaRegistry.getBlogMeta(source),
+                        blogSource = meta.name,
+                        blogMeta = meta,
                         articleCount = count,
                     )
                 }.sortedByDescending { it.articleCount }
