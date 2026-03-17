@@ -10,9 +10,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 import org.ikseong.artech.data.model.AppVersionInfo
 import org.ikseong.artech.data.model.ThemeMode
 import org.ikseong.artech.data.model.UpdateType
@@ -50,6 +52,8 @@ fun App() {
         versionInfo = info
     }
 
+    val scope = rememberCoroutineScope()
+
     ArtechTheme(darkTheme = darkTheme) {
         when (isLoggedIn) {
             null -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
@@ -69,7 +73,12 @@ fun App() {
                 versionInfo?.let { info ->
                     OptionalUpdateDialog(
                         onUpdate = { openUrl(info.storeUrl) },
-                        onDismiss = { updateType = UpdateType.NONE },
+                        onDismiss = {
+                            scope.launch {
+                                settingsRepository.setSkippedOptionalVersion(info.optionalUpdateVersion)
+                            }
+                            updateType = UpdateType.NONE
+                        },
                     )
                 }
             }

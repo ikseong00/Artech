@@ -26,7 +26,7 @@ import org.koin.dsl.module
 val dataModule = module {
     single { SupabaseProvider.client }
     single { ArticleRepository(get()) }
-    single { AppUpdateRepository(get()) }
+    single { AppUpdateRepository(get(), get()) }
     single { FeedbackRepository(get()) }
     single { SessionManager(get()) }
     single { AuthRepository(get(), get()) }

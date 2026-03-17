@@ -2,12 +2,16 @@ package org.ikseong.artech.data.repository
 
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
+import kotlinx.coroutines.flow.first
 import org.ikseong.artech.BuildKonfig
 import org.ikseong.artech.data.model.AppVersionDto
 import org.ikseong.artech.data.model.AppVersionInfo
 import org.ikseong.artech.data.model.UpdateType
 
-class AppUpdateRepository(private val client: SupabaseClient) {
+class AppUpdateRepository(
+    private val client: SupabaseClient,
+    private val settingsRepository: SettingsRepository,
+) {
 
     suspend fun checkForUpdate(): Pair<UpdateType, AppVersionInfo?> {
         return try {
@@ -30,7 +34,10 @@ class AppUpdateRepository(private val client: SupabaseClient) {
             val currentVersion = BuildKonfig.APP_VERSION
             val updateType = when {
                 compareVersions(currentVersion, dto.forceUpdateVersion) < 0 -> UpdateType.FORCE
-                compareVersions(currentVersion, dto.optionalUpdateVersion) < 0 -> UpdateType.OPTIONAL
+                compareVersions(currentVersion, dto.optionalUpdateVersion) < 0 -> {
+                    val skippedVersion = settingsRepository.skippedOptionalVersion.first()
+                    if (skippedVersion == dto.optionalUpdateVersion) UpdateType.NONE else UpdateType.OPTIONAL
+                }
                 else -> UpdateType.NONE
             }
 
