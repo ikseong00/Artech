@@ -11,6 +11,7 @@ import org.ikseong.artech.data.model.ArticleDto
 import org.ikseong.artech.data.model.BlogStats
 import org.ikseong.artech.data.model.CategoryGroup
 import org.ikseong.artech.data.model.toArticle
+import io.github.jan.supabase.postgrest.query.Columns
 
 class ArticleRepository(private val client: SupabaseClient) {
 
@@ -106,7 +107,7 @@ class ArticleRepository(private val client: SupabaseClient) {
 
     suspend fun getCategoriesByBlog(blogSource: String): List<String> {
         val raw = client.from(TABLE_NAME)
-            .select(columns = io.github.jan.supabase.postgrest.query.Columns.list("primary_category")) {
+            .select(columns = Columns.list("primary_category")) {
                 filter { eq("blog_source", blogSource) }
             }
             .decodeList<CategoryResult>()
@@ -118,7 +119,7 @@ class ArticleRepository(private val client: SupabaseClient) {
 
     suspend fun getBlogStats(blogSource: String): BlogStats {
         val allArticles = client.from(TABLE_NAME)
-            .select(columns = io.github.jan.supabase.postgrest.query.Columns.list("published_at", "created_at")) {
+            .select(columns = Columns.list("published_at", "created_at")) {
                 filter { eq("blog_source", blogSource) }
                 order("published_at", Order.ASCENDING)
             }
@@ -132,6 +133,19 @@ class ArticleRepository(private val client: SupabaseClient) {
             latestDate = dates.lastOrNull()?.take(10)?.replace("-", "."),
         )
     }
+
+    suspend fun getAllBlogArticleCounts(): Map<String, Int> {
+        return client.postgrest.rpc("get_blog_article_counts")
+            .decodeList<BlogArticleCountResult>()
+            .associate { it.blogSource to it.count }
+    }
+
+    @Serializable
+    private data class BlogArticleCountResult(
+        @SerialName("blog_source")
+        val blogSource: String,
+        val count: Int,
+    )
 
     @Serializable
     private data class BlogStatDto(

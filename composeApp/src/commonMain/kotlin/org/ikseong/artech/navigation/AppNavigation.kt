@@ -21,6 +21,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import org.ikseong.artech.ui.screen.blog.BlogScreen
+import org.ikseong.artech.ui.screen.bloglist.BlogListScreen
 import org.ikseong.artech.ui.screen.detail.DetailScreen
 import org.ikseong.artech.ui.screen.favorite.FavoriteScreen
 import org.ikseong.artech.ui.screen.history.HistoryScreen
@@ -35,6 +36,7 @@ fun AppNavigation() {
 
     val isDetailScreen = currentDestination?.hasRoute(Route.Detail::class) == true
     val isBlogScreen = currentDestination?.hasRoute(Route.Blog::class) == true
+    val isBlogListScreen = currentDestination?.hasRoute(Route.BlogList::class) == true
 
     val navigateToHome: () -> Unit = {
         navController.navigate(Route.Home) {
@@ -48,7 +50,7 @@ fun AppNavigation() {
 
     Scaffold(
         bottomBar = {
-            if (!isDetailScreen && !isBlogScreen) {
+            if (!isDetailScreen && !isBlogScreen && !isBlogListScreen) {
                 val primaryColor = MaterialTheme.colorScheme.primary
 
                 NavigationBar(
@@ -104,6 +106,9 @@ fun AppNavigation() {
                     onBlogClick = { blogSource ->
                         navController.navigate(Route.Blog(blogSource = blogSource))
                     },
+                    onBlogListClick = {
+                        navController.navigate(Route.BlogList)
+                    },
                 )
             }
             composable<Route.Favorite> {
@@ -129,7 +134,11 @@ fun AppNavigation() {
                 )
             }
             composable<Route.Settings> {
-                SettingsScreen()
+                SettingsScreen(
+                    onBlogListClick = {
+                        navController.navigate(Route.BlogList)
+                    },
+                )
             }
             composable<Route.Detail> {
                 DetailScreen(
@@ -137,6 +146,14 @@ fun AppNavigation() {
                     onBlogClick = { blogSource ->
                         navController.navigate(Route.Blog(blogSource = blogSource))
                     },
+                )
+            }
+            composable<Route.BlogList> {
+                BlogListScreen(
+                    onBlogClick = { blogSource ->
+                        navController.navigate(Route.Blog(blogSource = blogSource))
+                    },
+                    onBack = { navController.popBackStack() },
                 )
             }
             composable<Route.Blog> {
