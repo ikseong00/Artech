@@ -7,8 +7,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.ikseong.artech.data.model.BlogMeta
-import org.ikseong.artech.data.model.faviconUrl
 import org.ikseong.artech.data.repository.ArticleRepository
 
 class BlogListViewModel(
@@ -26,16 +24,12 @@ class BlogListViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             try {
-                val results = articleRepository.getAllBlogArticleCounts()
-                val blogs = results.map { result ->
+                val results = articleRepository.getAllBlogs()
+                val blogs = results.map { (meta, count) ->
                     BlogListItem(
-                        blogSource = result.blogSource,
-                        blogMeta = BlogMeta(
-                            name = result.blogSource,
-                            url = result.url,
-                            logoUrl = if (result.domain.isNotBlank()) faviconUrl(result.domain) else "",
-                        ),
-                        articleCount = result.count,
+                        blogSource = meta.name,
+                        blogMeta = meta,
+                        articleCount = count,
                     )
                 }.sortedByDescending { it.articleCount }
                 _uiState.update { it.copy(blogs = blogs, isLoading = false) }

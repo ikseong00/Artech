@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.ikseong.artech.data.model.BlogMeta
 import org.ikseong.artech.data.repository.ArticleRepository
 import org.ikseong.artech.data.repository.HistoryRepository
 import org.ikseong.artech.navigation.Route
@@ -26,7 +27,9 @@ class BlogViewModel(
     private val blog = savedStateHandle.toRoute<Route.Blog>()
     val blogSource: String = blog.blogSource
 
-    private val _uiState = MutableStateFlow(BlogUiState())
+    private val _uiState = MutableStateFlow(
+        BlogUiState(blogMeta = BlogMeta(name = blogSource, url = "", logoUrl = "")),
+    )
     val uiState: StateFlow<BlogUiState> = _uiState.asStateFlow()
 
     private val _uiEffect = Channel<BlogUiEffect>(capacity = Channel.BUFFERED)

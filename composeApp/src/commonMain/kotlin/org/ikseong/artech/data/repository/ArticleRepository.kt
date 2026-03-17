@@ -136,9 +136,16 @@ class ArticleRepository(private val client: SupabaseClient) {
         )
     }
 
-    suspend fun getAllBlogArticleCounts(): List<BlogArticleCountResult> {
+    suspend fun getAllBlogs(): List<Pair<BlogMeta, Int>> {
         return client.postgrest.rpc("get_blog_article_counts")
             .decodeList<BlogArticleCountResult>()
+            .map { result ->
+                BlogMeta(
+                    name = result.blogSource,
+                    url = result.url,
+                    logoUrl = if (result.domain.isNotBlank()) faviconUrl(result.domain) else "",
+                ) to result.count
+            }
     }
 
     suspend fun getBlogMeta(blogSource: String): BlogMeta {
@@ -166,7 +173,7 @@ class ArticleRepository(private val client: SupabaseClient) {
     }
 
     @Serializable
-    data class BlogArticleCountResult(
+    private data class BlogArticleCountResult(
         @SerialName("blog_source")
         val blogSource: String,
         val count: Int,
