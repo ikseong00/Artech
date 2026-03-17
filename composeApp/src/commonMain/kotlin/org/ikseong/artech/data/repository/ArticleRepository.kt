@@ -8,8 +8,10 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.ikseong.artech.data.model.Article
 import org.ikseong.artech.data.model.ArticleDto
+import org.ikseong.artech.data.model.BlogMeta
 import org.ikseong.artech.data.model.BlogStats
 import org.ikseong.artech.data.model.CategoryGroup
+import org.ikseong.artech.data.model.faviconUrl
 import org.ikseong.artech.data.model.toArticle
 import io.github.jan.supabase.postgrest.query.Columns
 
@@ -134,17 +136,49 @@ class ArticleRepository(private val client: SupabaseClient) {
         )
     }
 
-    suspend fun getAllBlogArticleCounts(): Map<String, Int> {
+    suspend fun getAllBlogArticleCounts(): List<BlogArticleCountResult> {
         return client.postgrest.rpc("get_blog_article_counts")
             .decodeList<BlogArticleCountResult>()
-            .associate { it.blogSource to it.count }
+    }
+
+    suspend fun getBlogMeta(blogSource: String): BlogMeta {
+        val result = client.from(BLOG_SOURCES_TABLE)
+            .select {
+                filter { eq("name", blogSource) }
+                limit(1)
+            }
+            .decodeList<BlogSourceDto>()
+            .firstOrNull()
+
+        return if (result != null) {
+            BlogMeta(
+                name = result.name,
+                url = result.url,
+                logoUrl = faviconUrl(result.domain),
+            )
+        } else {
+            BlogMeta(
+                name = blogSource,
+                url = "",
+                logoUrl = "",
+            )
+        }
     }
 
     @Serializable
-    private data class BlogArticleCountResult(
+    data class BlogArticleCountResult(
         @SerialName("blog_source")
         val blogSource: String,
         val count: Int,
+        val url: String = "",
+        val domain: String = "",
+    )
+
+    @Serializable
+    private data class BlogSourceDto(
+        val name: String,
+        val url: String = "",
+        val domain: String = "",
     )
 
     @Serializable
@@ -163,6 +197,7 @@ class ArticleRepository(private val client: SupabaseClient) {
 
     companion object {
         private const val TABLE_NAME = "tech_blog_articles"
+        private const val BLOG_SOURCES_TABLE = "blog_sources"
         private const val EXCLUDED_CATEGORY = "Hiring"
         const val DEFAULT_PAGE_SIZE = 20
     }
