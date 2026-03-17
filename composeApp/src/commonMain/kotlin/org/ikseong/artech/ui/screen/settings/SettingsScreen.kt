@@ -18,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DeleteSweep
@@ -54,6 +55,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
+    onBlogListClick: () -> Unit = {},
     viewModel: SettingsViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -113,6 +115,20 @@ fun SettingsScreen(
                 onCheckedChange = { checked ->
                     viewModel.setThemeMode(if (checked) ThemeMode.DARK else ThemeMode.LIGHT)
                 },
+            )
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+            )
+
+            SettingsSectionHeader(title = "탐색")
+            SettingsItem(
+                icon = Icons.AutoMirrored.Filled.List,
+                iconBackgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                iconTint = MaterialTheme.colorScheme.primary,
+                title = "블로그 목록",
+                description = "수집 중인 기술 블로그 보기",
+                onClick = onBlogListClick,
             )
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = 16.dp),

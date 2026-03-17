@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -25,6 +26,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -68,6 +70,7 @@ import kotlin.time.ExperimentalTime
 fun HomeScreen(
     onArticleClick: (articleId: Long, link: String) -> Unit = { _, _ -> },
     onBlogClick: (String) -> Unit = {},
+    onBlogListClick: () -> Unit = {},
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -187,6 +190,14 @@ fun HomeScreen(
                     text = "Artech",
                     style = MaterialTheme.typography.headlineSmall,
                 )
+            },
+            actions = {
+                IconButton(onClick = onBlogListClick) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.List,
+                        contentDescription = "블로그 목록",
+                    )
+                }
             },
             windowInsets = WindowInsets(0, 0, 0, 0),
         )
