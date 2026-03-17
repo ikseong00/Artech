@@ -2,6 +2,8 @@ package org.ikseong.artech.ui.component
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.webkit.CookieManager
+import android.webkit.WebSettings
 import android.webkit.WebViewClient
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -49,9 +51,15 @@ actual fun WebView(
     AndroidView(
         factory = { context ->
             ScrollAwareWebView(context, onScrollDirectionChanged).apply {
+                CookieManager.getInstance().setAcceptThirdPartyCookies(this, true)
                 webViewClient = WebViewClient()
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
+                settings.databaseEnabled = true
+                settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+                settings.userAgentString = settings.userAgentString.replace(
+                    Regex("\\bwv\\b"), "",
+                ).replace("  ", " ")
                 loadUrl(url)
             }
         },
