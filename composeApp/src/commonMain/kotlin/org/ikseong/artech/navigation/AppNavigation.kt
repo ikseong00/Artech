@@ -11,6 +11,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -53,10 +55,15 @@ fun AppNavigation() {
             if (!isDetailScreen && !isBlogScreen && !isBlogListScreen) {
                 val primaryColor = MaterialTheme.colorScheme.primary
 
-                NavigationBar(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    tonalElevation = 0.dp,
-                ) {
+                Column {
+                    HorizontalDivider(
+                        thickness = 0.5.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                    )
+                    NavigationBar(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        tonalElevation = 0.dp,
+                    ) {
                     TopLevelDestination.entries.forEach { destination ->
                         val selected = currentDestination?.hierarchy?.any {
                             it.hasRoute(destination.route::class)
@@ -89,6 +96,7 @@ fun AppNavigation() {
                             ),
                         )
                     }
+                }
                 }
             }
         },
