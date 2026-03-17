@@ -1,6 +1,7 @@
 package org.ikseong.artech.ui.screen.home
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -60,8 +61,9 @@ import org.ikseong.artech.ui.component.ScrollToTopFab
 import org.ikseong.artech.util.PlatformBackHandler
 import org.ikseong.artech.util.rememberExitAppAction
 import org.koin.compose.viewmodel.koinViewModel
+import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun HomeScreen(
     onArticleClick: (articleId: Long, link: String) -> Unit = { _, _ -> },
@@ -244,6 +246,7 @@ fun HomeScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
+                        .clipToBounds()
                         .nestedScroll(nestedScrollConnection),
                 ) {
                     LazyColumn(
