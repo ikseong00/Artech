@@ -51,6 +51,7 @@ actual fun WebView(
             ScrollAwareWebView(context, onScrollDirectionChanged).apply {
                 webViewClient = WebViewClient()
                 settings.javaScriptEnabled = true
+                settings.domStorageEnabled = true
                 loadUrl(url)
             }
         },
