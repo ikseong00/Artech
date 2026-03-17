@@ -9,15 +9,17 @@ import kotlinx.serialization.Serializable
 import org.ikseong.artech.data.model.Article
 import org.ikseong.artech.data.model.ArticleDto
 import org.ikseong.artech.data.model.BlogStats
+import org.ikseong.artech.data.model.CategoryGroup
 import org.ikseong.artech.data.model.toArticle
 
 class ArticleRepository(private val client: SupabaseClient) {
 
     suspend fun getCategories(): List<String> {
-        return client.postgrest.rpc("get_distinct_categories")
+        val raw = client.postgrest.rpc("get_distinct_categories")
             .decodeList<CategoryResult>()
             .mapNotNull { it.primaryCategory }
             .filter { it != EXCLUDED_CATEGORY }
+        return CategoryGroup.mergeCategories(raw)
     }
 
     suspend fun getArticles(
@@ -29,7 +31,8 @@ class ArticleRepository(private val client: SupabaseClient) {
             .select {
                 filter {
                     if (category != null) {
-                        eq("primary_category", category)
+                        val expanded = CategoryGroup.expand(category)
+                        isIn("primary_category", expanded)
                     } else {
                         neq("primary_category", EXCLUDED_CATEGORY)
                     }
@@ -51,7 +54,8 @@ class ArticleRepository(private val client: SupabaseClient) {
             .select {
                 filter {
                     if (category != null) {
-                        eq("primary_category", category)
+                        val expanded = CategoryGroup.expand(category)
+                        isIn("primary_category", expanded)
                     } else {
                         neq("primary_category", EXCLUDED_CATEGORY)
                     }
@@ -89,7 +93,8 @@ class ArticleRepository(private val client: SupabaseClient) {
                 filter {
                     eq("blog_source", blogSource)
                     if (category != null) {
-                        eq("primary_category", category)
+                        val expanded = CategoryGroup.expand(category)
+                        isIn("primary_category", expanded)
                     }
                 }
                 order("published_at", Order.DESCENDING)
@@ -100,7 +105,7 @@ class ArticleRepository(private val client: SupabaseClient) {
     }
 
     suspend fun getCategoriesByBlog(blogSource: String): List<String> {
-        return client.from(TABLE_NAME)
+        val raw = client.from(TABLE_NAME)
             .select(columns = io.github.jan.supabase.postgrest.query.Columns.list("primary_category")) {
                 filter { eq("blog_source", blogSource) }
             }
@@ -108,7 +113,7 @@ class ArticleRepository(private val client: SupabaseClient) {
             .mapNotNull { it.primaryCategory }
             .distinct()
             .filter { it != EXCLUDED_CATEGORY }
-            .sorted()
+        return CategoryGroup.mergeCategories(raw).sorted()
     }
 
     suspend fun getBlogStats(blogSource: String): BlogStats {

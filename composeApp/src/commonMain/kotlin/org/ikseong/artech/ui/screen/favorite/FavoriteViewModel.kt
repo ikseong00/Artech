@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.ikseong.artech.data.model.Article
+import org.ikseong.artech.data.model.CategoryGroup
 import org.ikseong.artech.data.repository.FavoriteRepository
 
 class FavoriteViewModel(
@@ -21,14 +22,14 @@ class FavoriteViewModel(
         selectedCategory,
     ) { allArticles, category ->
         val filtered = if (category != null) {
-            allArticles.filter { it.category == category }
+            val expanded = CategoryGroup.expand(category).toSet()
+            allArticles.filter { it.category in expanded }
         } else {
             allArticles
         }
-        val categories = allArticles
-            .mapNotNull { it.category }
-            .distinct()
-            .sorted()
+        val categories = CategoryGroup.mergeCategories(
+            allArticles.mapNotNull { it.category },
+        ).sorted()
         FavoriteUiState(
             articles = filtered,
             allArticles = allArticles,
