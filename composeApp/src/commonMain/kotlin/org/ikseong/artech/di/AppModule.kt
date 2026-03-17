@@ -5,6 +5,7 @@ import org.ikseong.artech.data.local.AppDatabase
 import org.ikseong.artech.data.local.DataStoreFactory
 import org.ikseong.artech.data.local.DatabaseFactory
 import org.ikseong.artech.data.remote.SupabaseProvider
+import org.ikseong.artech.data.repository.AppUpdateRepository
 import org.ikseong.artech.data.repository.ArticleRepository
 import org.ikseong.artech.data.repository.AuthRepository
 import org.ikseong.artech.data.repository.FavoriteRepository
@@ -25,6 +26,7 @@ import org.koin.dsl.module
 val dataModule = module {
     single { SupabaseProvider.client }
     single { ArticleRepository(get()) }
+    single { AppUpdateRepository(get(), get()) }
     single { FeedbackRepository(get()) }
     single { SessionManager(get()) }
     single { AuthRepository(get(), get()) }

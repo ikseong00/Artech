@@ -156,5 +156,16 @@ buildkonfig {
         }
         buildConfigField(STRING, "SUPABASE_URL", System.getenv("SUPABASE_URL") ?: properties.getProperty("supabase.url", ""))
         buildConfigField(STRING, "SUPABASE_KEY", System.getenv("SUPABASE_KEY") ?: properties.getProperty("supabase.key", ""))
+        buildConfigField(STRING, "APP_VERSION", android.defaultConfig.versionName!!)
+        buildConfigField(STRING, "APP_PLATFORM", "android")
+    }
+
+    targetConfigs {
+        create("iosArm64") {
+            buildConfigField(STRING, "APP_PLATFORM", "ios")
+        }
+        create("iosSimulatorArm64") {
+            buildConfigField(STRING, "APP_PLATFORM", "ios")
+        }
     }
 }

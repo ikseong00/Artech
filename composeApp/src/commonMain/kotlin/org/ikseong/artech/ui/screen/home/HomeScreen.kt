@@ -1,6 +1,7 @@
 package org.ikseong.artech.ui.screen.home
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -24,6 +26,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -60,12 +63,14 @@ import org.ikseong.artech.ui.component.ScrollToTopFab
 import org.ikseong.artech.util.PlatformBackHandler
 import org.ikseong.artech.util.rememberExitAppAction
 import org.koin.compose.viewmodel.koinViewModel
+import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
 @Composable
 fun HomeScreen(
     onArticleClick: (articleId: Long, link: String) -> Unit = { _, _ -> },
     onBlogClick: (String) -> Unit = {},
+    onBlogListClick: () -> Unit = {},
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -186,6 +191,14 @@ fun HomeScreen(
                     style = MaterialTheme.typography.headlineSmall,
                 )
             },
+            actions = {
+                IconButton(onClick = onBlogListClick) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.List,
+                        contentDescription = "블로그 목록",
+                    )
+                }
+            },
             windowInsets = WindowInsets(0, 0, 0, 0),
         )
 
@@ -244,6 +257,7 @@ fun HomeScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
+                        .clipToBounds()
                         .nestedScroll(nestedScrollConnection),
                 ) {
                     LazyColumn(

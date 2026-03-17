@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.ikseong.artech.data.model.BlogMetaRegistry
+import org.ikseong.artech.data.model.BlogMeta
 import org.ikseong.artech.data.repository.ArticleRepository
 import org.ikseong.artech.data.repository.HistoryRepository
 import org.ikseong.artech.navigation.Route
@@ -27,7 +27,9 @@ class BlogViewModel(
     private val blog = savedStateHandle.toRoute<Route.Blog>()
     val blogSource: String = blog.blogSource
 
-    private val _uiState = MutableStateFlow(BlogUiState())
+    private val _uiState = MutableStateFlow(
+        BlogUiState(blogMeta = BlogMeta(name = blogSource, url = "", logoUrl = "")),
+    )
     val uiState: StateFlow<BlogUiState> = _uiState.asStateFlow()
 
     private val _uiEffect = Channel<BlogUiEffect>(capacity = Channel.BUFFERED)
@@ -37,8 +39,8 @@ class BlogViewModel(
     private var loadJob: Job? = null
 
     init {
-        _uiState.update { it.copy(blogMeta = BlogMetaRegistry.getBlogMeta(blogSource)) }
         viewModelScope.launch {
+            launch { loadBlogMeta() }
             launch { loadCategories() }
             launch { loadBlogStats() }
             launch {
@@ -47,6 +49,17 @@ class BlogViewModel(
                 }
             }
             loadArticles()
+        }
+    }
+
+    private suspend fun loadBlogMeta() {
+        try {
+            val meta = articleRepository.getBlogMeta(blogSource)
+            _uiState.update { it.copy(blogMeta = meta) }
+        } catch (_: CancellationException) {
+            throw CancellationException()
+        } catch (_: Exception) {
+            // 메타 로딩 실패 시 기본값 유지
         }
     }
 

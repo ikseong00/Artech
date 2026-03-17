@@ -60,10 +60,17 @@ class SettingsRepository(
         }
     }
 
+    val skippedOptionalVersion: Flow<String?> = dataStore.data.map { it[SKIPPED_OPTIONAL_VERSION_KEY] }
+
+    suspend fun setSkippedOptionalVersion(version: String) {
+        dataStore.edit { it[SKIPPED_OPTIONAL_VERSION_KEY] = version }
+    }
+
     companion object {
         private val THEME_MODE_KEY = stringPreferencesKey("theme_mode")
         private val LAST_VISIT_TIME_KEY = longPreferencesKey("last_visit_time")
         private val SCROLL_POSITION_KEY = intPreferencesKey("scroll_position")
         private val SCROLL_OFFSET_KEY = intPreferencesKey("scroll_offset")
+        private val SKIPPED_OPTIONAL_VERSION_KEY = stringPreferencesKey("skipped_optional_version")
     }
 }

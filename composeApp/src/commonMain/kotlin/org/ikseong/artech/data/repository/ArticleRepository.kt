@@ -8,16 +8,21 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.ikseong.artech.data.model.Article
 import org.ikseong.artech.data.model.ArticleDto
+import org.ikseong.artech.data.model.BlogMeta
 import org.ikseong.artech.data.model.BlogStats
+import org.ikseong.artech.data.model.CategoryGroup
+import org.ikseong.artech.data.model.faviconUrl
 import org.ikseong.artech.data.model.toArticle
+import io.github.jan.supabase.postgrest.query.Columns
 
 class ArticleRepository(private val client: SupabaseClient) {
 
     suspend fun getCategories(): List<String> {
-        return client.postgrest.rpc("get_distinct_categories")
+        val raw = client.postgrest.rpc("get_distinct_categories")
             .decodeList<CategoryResult>()
             .mapNotNull { it.primaryCategory }
             .filter { it != EXCLUDED_CATEGORY }
+        return CategoryGroup.mergeCategories(raw)
     }
 
     suspend fun getArticles(
@@ -29,7 +34,8 @@ class ArticleRepository(private val client: SupabaseClient) {
             .select {
                 filter {
                     if (category != null) {
-                        eq("primary_category", category)
+                        val expanded = CategoryGroup.expand(category)
+                        isIn("primary_category", expanded)
                     } else {
                         neq("primary_category", EXCLUDED_CATEGORY)
                     }
@@ -51,7 +57,8 @@ class ArticleRepository(private val client: SupabaseClient) {
             .select {
                 filter {
                     if (category != null) {
-                        eq("primary_category", category)
+                        val expanded = CategoryGroup.expand(category)
+                        isIn("primary_category", expanded)
                     } else {
                         neq("primary_category", EXCLUDED_CATEGORY)
                     }
@@ -89,7 +96,8 @@ class ArticleRepository(private val client: SupabaseClient) {
                 filter {
                     eq("blog_source", blogSource)
                     if (category != null) {
-                        eq("primary_category", category)
+                        val expanded = CategoryGroup.expand(category)
+                        isIn("primary_category", expanded)
                     }
                 }
                 order("published_at", Order.DESCENDING)
@@ -100,20 +108,20 @@ class ArticleRepository(private val client: SupabaseClient) {
     }
 
     suspend fun getCategoriesByBlog(blogSource: String): List<String> {
-        return client.from(TABLE_NAME)
-            .select(columns = io.github.jan.supabase.postgrest.query.Columns.list("primary_category")) {
+        val raw = client.from(TABLE_NAME)
+            .select(columns = Columns.list("primary_category")) {
                 filter { eq("blog_source", blogSource) }
             }
             .decodeList<CategoryResult>()
             .mapNotNull { it.primaryCategory }
             .distinct()
             .filter { it != EXCLUDED_CATEGORY }
-            .sorted()
+        return CategoryGroup.mergeCategories(raw).sorted()
     }
 
     suspend fun getBlogStats(blogSource: String): BlogStats {
         val allArticles = client.from(TABLE_NAME)
-            .select(columns = io.github.jan.supabase.postgrest.query.Columns.list("published_at", "created_at")) {
+            .select(columns = Columns.list("published_at", "created_at")) {
                 filter { eq("blog_source", blogSource) }
                 order("published_at", Order.ASCENDING)
             }
@@ -127,6 +135,58 @@ class ArticleRepository(private val client: SupabaseClient) {
             latestDate = dates.lastOrNull()?.take(10)?.replace("-", "."),
         )
     }
+
+    suspend fun getAllBlogs(): List<Pair<BlogMeta, Int>> {
+        return client.postgrest.rpc("get_blog_article_counts")
+            .decodeList<BlogArticleCountResult>()
+            .map { result ->
+                BlogMeta(
+                    name = result.blogSource,
+                    url = result.url,
+                    logoUrl = if (result.domain.isNotBlank()) faviconUrl(result.domain) else "",
+                ) to result.count
+            }
+    }
+
+    suspend fun getBlogMeta(blogSource: String): BlogMeta {
+        val result = client.from(BLOG_SOURCES_TABLE)
+            .select {
+                filter { eq("name", blogSource) }
+                limit(1)
+            }
+            .decodeList<BlogSourceDto>()
+            .firstOrNull()
+
+        return if (result != null) {
+            BlogMeta(
+                name = result.name,
+                url = result.url,
+                logoUrl = faviconUrl(result.domain),
+            )
+        } else {
+            BlogMeta(
+                name = blogSource,
+                url = "",
+                logoUrl = "",
+            )
+        }
+    }
+
+    @Serializable
+    private data class BlogArticleCountResult(
+        @SerialName("blog_source")
+        val blogSource: String,
+        val count: Int,
+        val url: String = "",
+        val domain: String = "",
+    )
+
+    @Serializable
+    private data class BlogSourceDto(
+        val name: String,
+        val url: String = "",
+        val domain: String = "",
+    )
 
     @Serializable
     private data class BlogStatDto(
@@ -144,6 +204,7 @@ class ArticleRepository(private val client: SupabaseClient) {
 
     companion object {
         private const val TABLE_NAME = "tech_blog_articles"
+        private const val BLOG_SOURCES_TABLE = "blog_sources"
         private const val EXCLUDED_CATEGORY = "Hiring"
         const val DEFAULT_PAGE_SIZE = 20
     }
