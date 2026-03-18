@@ -14,6 +14,7 @@ import org.ikseong.artech.data.repository.HistoryRepository
 import org.ikseong.artech.data.repository.SessionManager
 import org.ikseong.artech.data.repository.SettingsRepository
 import org.ikseong.artech.ui.screen.blog.BlogViewModel
+import org.ikseong.artech.ui.screen.bloglist.BlogListViewModel
 import org.ikseong.artech.ui.screen.detail.DetailViewModel
 import org.ikseong.artech.ui.screen.favorite.FavoriteViewModel
 import org.ikseong.artech.ui.screen.history.HistoryViewModel
@@ -54,5 +55,6 @@ val viewModelModule = module {
     viewModelOf(::HistoryViewModel)
     viewModelOf(::DetailViewModel)
     viewModelOf(::BlogViewModel)
+    viewModelOf(::BlogListViewModel)
     viewModelOf(::SettingsViewModel)
 }
