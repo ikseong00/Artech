@@ -93,8 +93,8 @@ android {
         applicationId = "org.ikseong.artech"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 12
-        versionName = "1.0.10"
+        versionCode = 13
+        versionName = "1.1.0"
     }
     packaging {
         resources {
