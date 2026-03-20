@@ -79,6 +79,7 @@ jobs:
             -clonedSourcePackagesDirPath "$HOME/SPMCache" \
             CODE_SIGN_STYLE=Manual \
             PROVISIONING_PROFILE_SPECIFIER="Artech" \
+            OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED=YES \
             archive
 
       - name: Export IPA
