@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.clickable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import org.ikseong.artech.data.model.CategoryGroup
 import org.ikseong.artech.ui.component.FeedbackBottomSheet
 import org.ikseong.artech.ui.component.ScrollDirection
 import org.ikseong.artech.ui.component.WebView
@@ -201,7 +202,7 @@ fun DetailScreen(
 
                                     if (art.category != null) {
                                         Text(
-                                            text = art.category,
+                                            text = CategoryGroup.toDisplayName(art.category),
                                             style = MaterialTheme.typography.labelSmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                                             modifier = Modifier
