@@ -41,6 +41,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import org.ikseong.artech.data.model.Article
+import org.ikseong.artech.data.model.CategoryGroup
 import org.ikseong.artech.util.formatDate
 
 @Composable
@@ -82,7 +83,7 @@ fun ArticleCard(
                     ) {
                         if (article.category != null) {
                             Text(
-                                text = article.category.uppercase(),
+                                text = CategoryGroup.toDisplayName(article.category).uppercase(),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary,
