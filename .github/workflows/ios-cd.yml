@@ -80,6 +80,7 @@ jobs:
             CODE_SIGN_STYLE=Manual \
             PROVISIONING_PROFILE_SPECIFIER="Artech" \
             OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED=YES \
+            FRAMEWORK_SEARCH_PATHS="$(SRCROOT)/../composeApp/build/bin/iosArm64/releaseFramework $(inherited)" \
             archive
 
       - name: Export IPA
