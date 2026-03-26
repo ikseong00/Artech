@@ -35,12 +35,6 @@ jobs:
       - name: Decode GoogleService-Info.plist
         run: echo "${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}" | base64 --decode > iosApp/iosApp/GoogleService-Info.plist
 
-      - name: Build KMP Release Framework
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-        run: ./gradlew :composeApp:linkReleaseFrameworkIosArm64 --stacktrace
-
       - name: Cache SPM packages
         uses: actions/cache@v4
         with:
@@ -70,6 +64,9 @@ jobs:
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
 
       - name: Build and Archive
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
           cd iosApp
           xcodebuild -project iosApp.xcodeproj \
@@ -79,8 +76,6 @@ jobs:
             -clonedSourcePackagesDirPath "$HOME/SPMCache" \
             CODE_SIGN_STYLE=Manual \
             PROVISIONING_PROFILE_SPECIFIER="Artech" \
-            OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED=YES \
-            FRAMEWORK_SEARCH_PATHS="\$(SRCROOT)/../composeApp/build/bin/iosArm64/releaseFramework \$(inherited)" \
             archive
 
       - name: Export IPA
