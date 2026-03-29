@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -56,6 +57,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import org.ikseong.artech.data.repository.SettingsRepository
 import org.ikseong.artech.ui.component.ArticleCard
 import org.ikseong.artech.ui.component.CategoryFilterRow
 import org.ikseong.artech.ui.component.RecommendedArticleCard
@@ -268,12 +270,46 @@ fun HomeScreen(
                     ) {
                         if (uiState.recommendedArticles.isNotEmpty() && uiState.selectedCategory == null) {
                             item(key = "recommended_header") {
-                                Text(
-                                    text = "오늘의 추천",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onBackground,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                                )
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(start = 16.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Text(
+                                        text = "오늘의 추천",
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onBackground,
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                    val remaining = uiState.recommendRefreshRemaining
+                                    val enabled = remaining > 0
+                                    Text(
+                                        text = "$remaining/${SettingsRepository.MAX_RECOMMEND_REFRESHES}",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = if (enabled) {
+                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                                        },
+                                    )
+                                    IconButton(
+                                        onClick = viewModel::refreshRecommendations,
+                                        enabled = enabled,
+                                        modifier = Modifier.size(36.dp),
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Refresh,
+                                            contentDescription = "추천 갱신",
+                                            tint = if (enabled) {
+                                                MaterialTheme.colorScheme.primary
+                                            } else {
+                                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+                                            },
+                                            modifier = Modifier.size(20.dp),
+                                        )
+                                    }
+                                }
                             }
 
                             item(key = "recommended_row") {

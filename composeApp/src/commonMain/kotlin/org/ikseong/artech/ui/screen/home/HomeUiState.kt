@@ -2,10 +2,12 @@ package org.ikseong.artech.ui.screen.home
 
 import kotlinx.datetime.Instant
 import org.ikseong.artech.data.model.Article
+import org.ikseong.artech.data.repository.SettingsRepository
 
 data class HomeUiState(
     val articles: List<Article> = emptyList(),
     val recommendedArticles: List<Article> = emptyList(),
+    val recommendRefreshRemaining: Int = SettingsRepository.MAX_RECOMMEND_REFRESHES,
     val isLoading: Boolean = false,
     val isLoadingMore: Boolean = false,
     val error: String? = null,

@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.ikseong.artech.data.model.Article
 import org.ikseong.artech.data.repository.ArticleRepository
 import org.ikseong.artech.data.repository.HistoryRepository
 import org.ikseong.artech.data.repository.SettingsRepository
@@ -34,7 +35,10 @@ class HomeViewModel(
     init {
         viewModelScope.launch {
             val lastVisit = settingsRepository.lastVisitTime.first()
-            _uiState.update { it.copy(lastVisitTime = lastVisit) }
+            val refreshRemaining = settingsRepository.getRecommendRefreshRemaining()
+            _uiState.update {
+                it.copy(lastVisitTime = lastVisit, recommendRefreshRemaining = refreshRemaining)
+            }
             settingsRepository.updateLastVisitTime()
             launch { loadCategories() }
             launch {
@@ -65,11 +69,7 @@ class HomeViewModel(
         loadJob = viewModelScope.launch {
             try {
                 val articles = fetchArticles(offset = 0)
-                val recommended = if (articles.size >= 5) {
-                    articles.shuffled().take(5)
-                } else {
-                    articles.shuffled()
-                }
+                val recommended = pickRecommendations(articles)
                 _uiState.update {
                     it.copy(
                         articles = articles,
@@ -120,6 +120,27 @@ class HomeViewModel(
         _uiState.update { it.copy(showUnreadOnly = !it.showUnreadOnly) }
     }
 
+    fun refreshRecommendations() {
+        if (_uiState.value.recommendRefreshRemaining <= 0) return
+        val articles = _uiState.value.articles
+        if (articles.isEmpty()) return
+
+        viewModelScope.launch {
+            val remaining = settingsRepository.useRecommendRefresh()
+            val recommended = if (articles.size >= 5) {
+                articles.shuffled().take(5)
+            } else {
+                articles.shuffled()
+            }
+            _uiState.update {
+                it.copy(
+                    recommendedArticles = recommended,
+                    recommendRefreshRemaining = remaining,
+                )
+            }
+        }
+    }
+
     fun selectCategory(category: String?) {
         if (_uiState.value.selectedCategory == category) return
         _uiState.update { it.copy(selectedCategory = category) }
@@ -142,9 +163,16 @@ class HomeViewModel(
     suspend fun getSavedScrollPosition(): Pair<Int, Int> =
         settingsRepository.getScrollPosition()
 
+    private fun pickRecommendations(articles: List<Article>): List<Article> =
+        if (articles.size >= RECOMMEND_COUNT) articles.shuffled().take(RECOMMEND_COUNT) else articles.shuffled()
+
     private suspend fun fetchArticles(offset: Int) =
         articleRepository.getArticles(
             category = _uiState.value.selectedCategory,
             offset = offset,
         )
+
+    companion object {
+        private const val RECOMMEND_COUNT = 5
+    }
 }
