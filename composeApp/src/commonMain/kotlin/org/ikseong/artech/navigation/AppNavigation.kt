@@ -28,6 +28,7 @@ import org.ikseong.artech.ui.screen.detail.DetailScreen
 import org.ikseong.artech.ui.screen.favorite.FavoriteScreen
 import org.ikseong.artech.ui.screen.history.HistoryScreen
 import org.ikseong.artech.ui.screen.home.HomeScreen
+import org.ikseong.artech.ui.screen.contact.ContactScreen
 import org.ikseong.artech.ui.screen.settings.SettingsScreen
 
 @Composable
@@ -39,6 +40,7 @@ fun AppNavigation() {
     val isDetailScreen = currentDestination?.hasRoute(Route.Detail::class) == true
     val isBlogScreen = currentDestination?.hasRoute(Route.Blog::class) == true
     val isBlogListScreen = currentDestination?.hasRoute(Route.BlogList::class) == true
+    val isContactScreen = currentDestination?.hasRoute(Route.Contact::class) == true
 
     val navigateToHome: () -> Unit = {
         navController.navigate(Route.Home) {
@@ -52,7 +54,7 @@ fun AppNavigation() {
 
     Scaffold(
         bottomBar = {
-            if (!isDetailScreen && !isBlogScreen && !isBlogListScreen) {
+            if (!isDetailScreen && !isBlogScreen && !isBlogListScreen && !isContactScreen) {
                 val primaryColor = MaterialTheme.colorScheme.primary
 
                 Column {
@@ -146,6 +148,14 @@ fun AppNavigation() {
                     onBlogListClick = {
                         navController.navigate(Route.BlogList)
                     },
+                    onContactClick = {
+                        navController.navigate(Route.Contact)
+                    },
+                )
+            }
+            composable<Route.Contact> {
+                ContactScreen(
+                    onBack = { navController.popBackStack() },
                 )
             }
             composable<Route.Detail> {
