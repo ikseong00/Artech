@@ -22,6 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -56,6 +57,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun SettingsScreen(
     onBlogListClick: () -> Unit = {},
+    onContactClick: () -> Unit = {},
     viewModel: SettingsViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -160,6 +162,14 @@ fun SettingsScreen(
             )
 
             SettingsSectionHeader(title = "앱 정보")
+            SettingsItem(
+                icon = Icons.Filled.Email,
+                iconBackgroundColor = MaterialTheme.colorScheme.primaryContainer,
+                iconTint = MaterialTheme.colorScheme.primary,
+                title = "문의하기",
+                description = "버그 제보 및 의견 보내기",
+                onClick = onContactClick,
+            )
             SettingsInfoItem(
                 icon = Icons.Filled.Info,
                 iconBackgroundColor = MaterialTheme.colorScheme.surfaceVariant,

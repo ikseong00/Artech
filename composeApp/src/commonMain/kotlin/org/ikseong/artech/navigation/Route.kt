@@ -27,4 +27,7 @@ sealed interface Route {
 
     @Serializable
     data object BlogList : Route
+
+    @Serializable
+    data object Contact : Route
 }
