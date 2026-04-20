@@ -77,6 +77,7 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
+    val recommendedListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     val exitApp = rememberExitAppAction()
     val showScrollToTop by remember {
@@ -133,6 +134,7 @@ fun HomeScreen(
         viewModel.uiEffect.collect { effect ->
             when (effect) {
                 HomeUiEffect.ScrollToTop -> listState.scrollToItem(0)
+                HomeUiEffect.ScrollRecommendedToStart -> recommendedListState.scrollToItem(0)
             }
         }
     }
@@ -293,20 +295,20 @@ fun HomeScreen(
                                             MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
                                         },
                                     )
-                                    IconButton(
+                                    TextButton(
                                         onClick = viewModel::refreshRecommendations,
                                         enabled = enabled,
-                                        modifier = Modifier.size(36.dp),
+                                        contentPadding = PaddingValues(horizontal = 8.dp),
                                     ) {
+                                        Text(
+                                            text = "새로고침",
+                                            style = MaterialTheme.typography.labelMedium,
+                                        )
+                                        Spacer(modifier = Modifier.size(4.dp))
                                         Icon(
                                             imageVector = Icons.Filled.Refresh,
-                                            contentDescription = "추천 갱신",
-                                            tint = if (enabled) {
-                                                MaterialTheme.colorScheme.primary
-                                            } else {
-                                                MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
-                                            },
-                                            modifier = Modifier.size(20.dp),
+                                            contentDescription = "추천 새로고침",
+                                            modifier = Modifier.size(18.dp),
                                         )
                                     }
                                 }
@@ -314,6 +316,7 @@ fun HomeScreen(
 
                             item(key = "recommended_row") {
                                 LazyRow(
+                                    state = recommendedListState,
                                     contentPadding = PaddingValues(horizontal = 16.dp),
                                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                                 ) {

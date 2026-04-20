@@ -28,4 +28,5 @@ data class HomeUiState(
 
 sealed interface HomeUiEffect {
     data object ScrollToTop : HomeUiEffect
+    data object ScrollRecommendedToStart : HomeUiEffect
 }

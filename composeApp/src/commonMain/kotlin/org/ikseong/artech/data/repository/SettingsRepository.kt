@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.core.stringSetPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -72,7 +73,7 @@ class SettingsRepository(
         val prefs = dataStore.data.first()
         val savedDate = prefs[RECOMMEND_REFRESH_DATE_KEY]
         return if (savedDate == todayDateString()) {
-            MAX_RECOMMEND_REFRESHES - (prefs[RECOMMEND_REFRESH_COUNT_KEY] ?: 0)
+            (MAX_RECOMMEND_REFRESHES - (prefs[RECOMMEND_REFRESH_COUNT_KEY] ?: 0)).coerceAtLeast(0)
         } else {
             MAX_RECOMMEND_REFRESHES
         }
@@ -87,12 +88,40 @@ class SettingsRepository(
         } else {
             0
         }
-        val newCount = currentCount + 1
+        val newCount = (currentCount + 1).coerceAtMost(MAX_RECOMMEND_REFRESHES)
         dataStore.edit {
             it[RECOMMEND_REFRESH_DATE_KEY] = today
             it[RECOMMEND_REFRESH_COUNT_KEY] = newCount
         }
         return MAX_RECOMMEND_REFRESHES - newCount
+    }
+
+    suspend fun getRecommendedArticleIdsSeenToday(): Set<Long> {
+        val today = todayDateString()
+        val prefs = dataStore.data.first()
+        return if (prefs[RECOMMEND_SEEN_ARTICLE_IDS_DATE_KEY] == today) {
+            prefs[RECOMMEND_SEEN_ARTICLE_IDS_KEY]
+                .orEmpty()
+                .mapNotNull { it.toLongOrNull() }
+                .toSet()
+        } else {
+            emptySet()
+        }
+    }
+
+    suspend fun addRecommendedArticleIdsSeenToday(ids: Collection<Long>) {
+        if (ids.isEmpty()) return
+
+        val today = todayDateString()
+        dataStore.edit { preferences ->
+            val existingIds = if (preferences[RECOMMEND_SEEN_ARTICLE_IDS_DATE_KEY] == today) {
+                preferences[RECOMMEND_SEEN_ARTICLE_IDS_KEY].orEmpty()
+            } else {
+                emptySet()
+            }
+            preferences[RECOMMEND_SEEN_ARTICLE_IDS_DATE_KEY] = today
+            preferences[RECOMMEND_SEEN_ARTICLE_IDS_KEY] = existingIds + ids.map { it.toString() }
+        }
     }
 
     private fun todayDateString(): String =
@@ -108,5 +137,7 @@ class SettingsRepository(
         private val SKIPPED_OPTIONAL_VERSION_KEY = stringPreferencesKey("skipped_optional_version")
         private val RECOMMEND_REFRESH_DATE_KEY = stringPreferencesKey("recommend_refresh_date")
         private val RECOMMEND_REFRESH_COUNT_KEY = intPreferencesKey("recommend_refresh_count")
+        private val RECOMMEND_SEEN_ARTICLE_IDS_DATE_KEY = stringPreferencesKey("recommend_seen_article_ids_date")
+        private val RECOMMEND_SEEN_ARTICLE_IDS_KEY = stringSetPreferencesKey("recommend_seen_article_ids")
     }
 }

@@ -69,7 +69,11 @@ class HomeViewModel(
         loadJob = viewModelScope.launch {
             try {
                 val articles = fetchArticles(offset = 0)
-                val recommended = pickRecommendations(articles)
+                val recommended = if (_uiState.value.selectedCategory == null) {
+                    pickRecommendations(articles)
+                } else {
+                    emptyList()
+                }
                 _uiState.update {
                     it.copy(
                         articles = articles,
@@ -126,18 +130,23 @@ class HomeViewModel(
         if (articles.isEmpty()) return
 
         viewModelScope.launch {
-            val remaining = settingsRepository.useRecommendRefresh()
-            val recommended = if (articles.size >= 5) {
-                articles.shuffled().take(5)
-            } else {
-                articles.shuffled()
+            val remainingBeforeRefresh = settingsRepository.getRecommendRefreshRemaining()
+            if (remainingBeforeRefresh <= 0) {
+                _uiState.update { it.copy(recommendRefreshRemaining = 0) }
+                return@launch
             }
+
+            val recommended = pickRecommendations(articles)
+            if (recommended.isEmpty()) return@launch
+
+            val remaining = settingsRepository.useRecommendRefresh()
             _uiState.update {
                 it.copy(
                     recommendedArticles = recommended,
                     recommendRefreshRemaining = remaining,
                 )
             }
+            _uiEffect.trySend(HomeUiEffect.ScrollRecommendedToStart)
         }
     }
 
@@ -163,8 +172,15 @@ class HomeViewModel(
     suspend fun getSavedScrollPosition(): Pair<Int, Int> =
         settingsRepository.getScrollPosition()
 
-    private fun pickRecommendations(articles: List<Article>): List<Article> =
-        if (articles.size >= RECOMMEND_COUNT) articles.shuffled().take(RECOMMEND_COUNT) else articles.shuffled()
+    private suspend fun pickRecommendations(articles: List<Article>): List<Article> {
+        val seenIds = settingsRepository.getRecommendedArticleIdsSeenToday()
+        val recommended = articles
+            .filter { it.id !in seenIds }
+            .shuffled()
+            .take(RECOMMEND_COUNT)
+        settingsRepository.addRecommendedArticleIdsSeenToday(recommended.map { it.id })
+        return recommended
+    }
 
     private suspend fun fetchArticles(offset: Int) =
         articleRepository.getArticles(

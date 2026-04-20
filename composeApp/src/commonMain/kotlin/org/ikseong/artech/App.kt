@@ -26,6 +26,7 @@ import org.ikseong.artech.ui.component.ForceUpdateDialog
 import org.ikseong.artech.ui.component.OptionalUpdateDialog
 import org.ikseong.artech.ui.screen.onboarding.OnboardingScreen
 import org.ikseong.artech.ui.theme.ArtechTheme
+import org.ikseong.artech.util.SystemBarsThemeEffect
 import org.ikseong.artech.util.openUrl
 import org.koin.compose.koinInject
 
@@ -55,6 +56,8 @@ fun App() {
     val scope = rememberCoroutineScope()
 
     ArtechTheme(darkTheme = darkTheme) {
+        SystemBarsThemeEffect(darkTheme = darkTheme)
+
         when (isLoggedIn) {
             null -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
             false -> OnboardingScreen()
