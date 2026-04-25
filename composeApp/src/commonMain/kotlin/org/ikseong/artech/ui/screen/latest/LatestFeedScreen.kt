@@ -69,8 +69,10 @@ fun LatestFeedScreen(
         }
     }
 
-    LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore) {
+    val loadMoreSignal = uiState.loadMoreSignal(shouldLoadMore)
+
+    LaunchedEffect(loadMoreSignal) {
+        if (loadMoreSignal.shouldLoadMore) {
             viewModel.loadMore()
         }
     }

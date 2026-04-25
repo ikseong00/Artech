@@ -68,7 +68,7 @@ class LatestFeedViewModel(
     fun loadArticles() {
         loadJob?.cancel()
         currentPage = 0
-        _uiState.update { it.copy(isLoading = true, error = null, hasMorePages = true) }
+        _uiState.update { it.startRefresh() }
 
         loadJob = viewModelScope.launch {
             try {
@@ -77,13 +77,20 @@ class LatestFeedViewModel(
                     it.copy(
                         articles = articles,
                         isLoading = false,
+                        isLoadingMore = false,
                         hasMorePages = articles.size >= ArticleRepository.DEFAULT_PAGE_SIZE,
                     )
                 }
             } catch (_: CancellationException) {
                 throw CancellationException()
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoading = false, error = e.message) }
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        isLoadingMore = false,
+                        error = e.message,
+                    )
+                }
             }
         }
     }

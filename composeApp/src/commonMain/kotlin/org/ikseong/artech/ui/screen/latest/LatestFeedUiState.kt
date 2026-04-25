@@ -21,8 +21,34 @@ data class LatestFeedUiState(
         } else {
             articles
         }
+
+    internal fun startRefresh(): LatestFeedUiState = copy(
+        isLoading = true,
+        isLoadingMore = false,
+        error = null,
+        hasMorePages = true,
+    )
+
+    internal fun loadMoreSignal(shouldLoadMore: Boolean): LatestFeedLoadMoreSignal =
+        LatestFeedLoadMoreSignal(
+            shouldLoadMore = shouldLoadMore,
+            loadedArticleCount = articles.size,
+            isLoading = isLoading,
+            isLoadingMore = isLoadingMore,
+            hasMorePages = hasMorePages,
+            showUnreadOnly = showUnreadOnly,
+        )
 }
 
 sealed interface LatestFeedUiEffect {
     data object ScrollToTop : LatestFeedUiEffect
 }
+
+internal data class LatestFeedLoadMoreSignal(
+    val shouldLoadMore: Boolean,
+    val loadedArticleCount: Int,
+    val isLoading: Boolean,
+    val isLoadingMore: Boolean,
+    val hasMorePages: Boolean,
+    val showUnreadOnly: Boolean,
+)
