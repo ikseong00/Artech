@@ -20,9 +20,8 @@ object HomeFeedComposer {
         profile: HomeInterestProfile,
         now: Instant,
     ): HomeFeedSections {
-        val unreadCandidates = candidates
-            .distinctBy { it.id }
-            .filter { it.id !in readArticleIds }
+        val recentCandidates = candidates.distinctBy { it.id }
+        val unreadCandidates = recentCandidates.filter { it.id !in readArticleIds }
         val rankedUnread = unreadCandidates
             .map { article ->
                 ScoredArticle(
@@ -58,7 +57,7 @@ object HomeFeedComposer {
             .map { it.first.article }
             .take(MissedArticleCount)
             .toList()
-        val latestPreview = unreadCandidates
+        val latestPreview = recentCandidates
             .sortedWith(
                 compareByDescending<Article> { it.displayDate.toEpochMilliseconds() }
                     .thenByDescending { it.id }

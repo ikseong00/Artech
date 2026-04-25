@@ -9,7 +9,7 @@ import org.ikseong.artech.data.model.Article
 class HomeFeedComposerTest {
 
     @Test
-    fun compose_builds_diversified_today_picks_and_missed_articles() {
+    fun compose_builds_diversified_today_picks_missed_articles_and_recent_preview() {
         val now = Instant.parse("2026-04-25T12:00:00Z")
         val profile = HomeInterestProfile(
             categoryScores = mapOf(
@@ -87,7 +87,7 @@ class HomeFeedComposerTest {
         assertEquals(3, sections.interestTopics.first().unreadCount)
         assertEquals(listOf(6L, 4L, 8L), sections.missedArticles.map { it.id })
         assertFalse(sections.missedArticles.any { it.id in sections.todayPicks.map { article -> article.id } })
-        assertEquals(listOf(1L, 3L, 5L, 4L), sections.latestPreview.map { it.id })
+        assertEquals(listOf(1L, 2L, 3L, 5L), sections.latestPreview.map { it.id })
     }
 
     private fun article(
