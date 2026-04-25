@@ -4,6 +4,7 @@ import kotlinx.datetime.Instant
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.ikseong.artech.data.model.Article
 
 class HomeFeedComposerTest {
@@ -88,6 +89,35 @@ class HomeFeedComposerTest {
         assertEquals(listOf(6L, 4L, 8L), sections.missedArticles.map { it.id })
         assertFalse(sections.missedArticles.any { it.id in sections.todayPicks.map { article -> article.id } })
         assertEquals(listOf(1L, 2L, 3L, 5L), sections.latestPreview.map { it.id })
+    }
+
+    @Test
+    fun compose_keeps_today_picks_available_when_interest_profile_is_empty() {
+        val sections = HomeFeedComposer.compose(
+            candidates = listOf(
+                article(
+                    id = 1L,
+                    category = "Android",
+                    blogSource = "Android Weekly",
+                    publishedAt = "2026-04-25T10:00:00Z",
+                ),
+                article(
+                    id = 2L,
+                    category = "AI",
+                    blogSource = "OpenAI",
+                    publishedAt = "2026-04-25T09:00:00Z",
+                ),
+            ),
+            readArticleIds = emptySet(),
+            profile = HomeInterestProfile(
+                categoryScores = emptyMap(),
+                blogScores = emptyMap(),
+            ),
+            now = Instant.parse("2026-04-25T12:00:00Z"),
+        )
+
+        assertTrue(sections.todayPicks.isNotEmpty())
+        assertEquals(emptyList(), sections.interestTopics)
     }
 
     private fun article(

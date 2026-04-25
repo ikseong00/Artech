@@ -11,8 +11,10 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Instant
 import org.ikseong.artech.data.model.Article
 import org.ikseong.artech.data.repository.ArticleRepository
+import org.ikseong.artech.data.repository.FavoriteRepository
 import org.ikseong.artech.data.repository.HistoryRepository
 import org.ikseong.artech.data.repository.SettingsRepository
 import kotlin.coroutines.cancellation.CancellationException
@@ -21,6 +23,9 @@ class HomeViewModel(
     private val articleRepository: ArticleRepository,
     private val settingsRepository: SettingsRepository,
     private val historyRepository: HistoryRepository,
+    private val favoriteRepository: FavoriteRepository,
+    private val interestProfileCalculator: HomeInterestProfileCalculator,
+    private val feedComposer: HomeFeedComposer,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
@@ -29,132 +34,24 @@ class HomeViewModel(
     private val _uiEffect = Channel<HomeUiEffect>(capacity = Channel.BUFFERED)
     val uiEffect = _uiEffect.receiveAsFlow()
 
-    private var currentPage = 0
     private var loadJob: Job? = null
 
     init {
         viewModelScope.launch {
             val lastVisit = settingsRepository.lastVisitTime.first()
-            val refreshRemaining = settingsRepository.getRecommendRefreshRemaining()
-            _uiState.update {
-                it.copy(lastVisitTime = lastVisit, recommendRefreshRemaining = refreshRemaining)
-            }
+            _uiState.update { it.copy(lastVisitTime = lastVisit) }
             settingsRepository.updateLastVisitTime()
-            launch { loadCategories() }
-            launch {
-                historyRepository.getReadArticleIds().collect { ids ->
-                    _uiState.update { it.copy(readArticleIds = ids) }
-                }
-            }
-            loadArticles()
+            loadHome(refreshingTodayPicks = false)
         }
     }
 
-    private suspend fun loadCategories() {
-        try {
-            val categories = articleRepository.getCategories()
-            _uiState.update { it.copy(categories = categories) }
-        } catch (_: CancellationException) {
-            throw CancellationException()
-        } catch (_: Exception) {
-            // 카테고리 로딩 실패 시 빈 목록 유지
-        }
-    }
-
-    fun loadArticles() {
-        loadJob?.cancel()
-        currentPage = 0
-        _uiState.update { it.copy(isLoading = true, error = null, hasMorePages = true) }
-
-        loadJob = viewModelScope.launch {
-            try {
-                val articles = fetchArticles(offset = 0)
-                val recommended = if (_uiState.value.selectedCategory == null) {
-                    pickRecommendations(articles)
-                } else {
-                    emptyList()
-                }
-                _uiState.update {
-                    it.copy(
-                        articles = articles,
-                        recommendedArticles = recommended,
-                        isLoading = false,
-                        hasMorePages = articles.size >= ArticleRepository.DEFAULT_PAGE_SIZE,
-                    )
-                }
-            } catch (_: CancellationException) {
-                throw CancellationException()
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(isLoading = false, error = e.message)
-                }
-            }
-        }
-    }
-
-    fun loadMore() {
-        val state = _uiState.value
-        if (state.isLoading || state.isLoadingMore || !state.hasMorePages) return
-
-        currentPage++
-        _uiState.update { it.copy(isLoadingMore = true) }
-
-        viewModelScope.launch {
-            try {
-                val articles = fetchArticles(offset = currentPage * ArticleRepository.DEFAULT_PAGE_SIZE)
-                _uiState.update {
-                    it.copy(
-                        articles = (it.articles + articles).distinctBy { a -> a.id },
-                        isLoadingMore = false,
-                        hasMorePages = articles.size >= ArticleRepository.DEFAULT_PAGE_SIZE,
-                    )
-                }
-            } catch (_: CancellationException) {
-                throw CancellationException()
-            } catch (e: Exception) {
-                currentPage--
-                _uiState.update {
-                    it.copy(isLoadingMore = false, error = e.message)
-                }
-            }
-        }
-    }
-
-    fun toggleUnreadFilter() {
-        _uiState.update { it.copy(showUnreadOnly = !it.showUnreadOnly) }
+    fun loadHome() {
+        loadHome(refreshingTodayPicks = false)
     }
 
     fun refreshRecommendations() {
-        if (_uiState.value.recommendRefreshRemaining <= 0) return
-        val articles = _uiState.value.articles
-        if (articles.isEmpty()) return
-
-        viewModelScope.launch {
-            val remainingBeforeRefresh = settingsRepository.getRecommendRefreshRemaining()
-            if (remainingBeforeRefresh <= 0) {
-                _uiState.update { it.copy(recommendRefreshRemaining = 0) }
-                return@launch
-            }
-
-            val recommended = pickRecommendations(articles)
-            if (recommended.isEmpty()) return@launch
-
-            val remaining = settingsRepository.useRecommendRefresh()
-            _uiState.update {
-                it.copy(
-                    recommendedArticles = recommended,
-                    recommendRefreshRemaining = remaining,
-                )
-            }
-            _uiEffect.trySend(HomeUiEffect.ScrollRecommendedToStart)
-        }
-    }
-
-    fun selectCategory(category: String?) {
-        if (_uiState.value.selectedCategory == category) return
-        _uiState.update { it.copy(selectedCategory = category) }
-        loadArticles()
-        _uiEffect.trySend(HomeUiEffect.ScrollToTop)
+        if (_uiState.value.isRefreshingTodayPicks) return
+        loadHome(refreshingTodayPicks = true)
     }
 
     fun saveScrollPosition(index: Int, offset: Int) {
@@ -172,23 +69,102 @@ class HomeViewModel(
     suspend fun getSavedScrollPosition(): Pair<Int, Int> =
         settingsRepository.getScrollPosition()
 
-    private suspend fun pickRecommendations(articles: List<Article>): List<Article> {
-        val seenIds = settingsRepository.getRecommendedArticleIdsSeenToday()
-        val recommended = articles
-            .filter { it.id !in seenIds }
-            .shuffled()
-            .take(RECOMMEND_COUNT)
-        settingsRepository.addRecommendedArticleIdsSeenToday(recommended.map { it.id })
-        return recommended
+    private fun loadHome(refreshingTodayPicks: Boolean) {
+        loadJob?.cancel()
+        _uiState.update {
+            if (refreshingTodayPicks) {
+                it.copy(isRefreshingTodayPicks = true, error = null)
+            } else {
+                it.copy(isLoading = true, isRefreshingTodayPicks = false, error = null)
+            }
+        }
+
+        loadJob = viewModelScope.launch {
+            try {
+                val sections = composeHomeSections()
+                _uiState.update {
+                    it.copy(
+                        todayPicks = sections.todayPicks,
+                        interestTopics = sections.interestTopics,
+                        missedArticles = sections.missedArticles,
+                        latestPreview = sections.latestPreview,
+                        isLoading = false,
+                        isRefreshingTodayPicks = false,
+                        error = null,
+                    )
+                }
+                if (refreshingTodayPicks) {
+                    _uiEffect.trySend(HomeUiEffect.ScrollRecommendedToStart)
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        isRefreshingTodayPicks = false,
+                        error = e.message,
+                    )
+                }
+            }
+        }
     }
 
-    private suspend fun fetchArticles(offset: Int) =
-        articleRepository.getArticles(
-            category = _uiState.value.selectedCategory,
-            offset = offset,
+    private suspend fun composeHomeSections(): HomeFeedSections {
+        val now = currentInstant()
+        val candidates = articleRepository.getHomeFeedCandidates()
+        val readHistory = historyRepository.getAllWithReadAt().first()
+        val favorites = favoriteRepository.getAllWithSavedAt().first()
+        val profile = interestProfileCalculator.calculate(
+            readHistory = readHistory,
+            favorites = favorites,
+            now = now,
         )
+        return feedComposer.compose(
+            candidates = candidates,
+            readArticleIds = readHistory.map { it.article.id }.toSet(),
+            profile = profile,
+            now = now,
+        )
+    }
 
-    companion object {
-        private const val RECOMMEND_COUNT = 5
+    private fun currentInstant(): Instant =
+        Instant.fromEpochMilliseconds(kotlin.time.Clock.System.now().toEpochMilliseconds())
+
+    fun loadArticles() {
+        loadHome()
+    }
+
+    fun loadMore() = Unit
+
+    fun toggleUnreadFilter() = Unit
+
+    fun selectCategory(category: String?) {
+        _uiEffect.trySend(HomeUiEffect.ScrollToTop)
     }
 }
+
+// Temporary compatibility for HomeScreen until Task 5 renders sectioned home state.
+internal val HomeUiState.articles: List<Article>
+    get() = latestPreview
+
+internal val HomeUiState.recommendedArticles: List<Article>
+    get() = todayPicks
+
+internal val HomeUiState.recommendRefreshRemaining: Int
+    get() = if (isRefreshingTodayPicks) 0 else 1
+
+internal val HomeUiState.selectedCategory: String?
+    get() = null
+
+internal val HomeUiState.categories: List<String>
+    get() = interestTopics.map { it.category }
+
+internal val HomeUiState.showUnreadOnly: Boolean
+    get() = false
+
+internal val HomeUiState.isLoadingMore: Boolean
+    get() = false
+
+internal val HomeUiState.displayArticles: List<Article>
+    get() = latestPreview
