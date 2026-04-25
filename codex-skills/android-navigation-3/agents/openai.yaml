@@ -1,0 +1,4 @@
+interface:
+  display_name: "Android Navigation 3"
+  short_description: "Migrate and build with Navigation 3"
+  default_prompt: "Use $android-navigation-3 to migrate or implement Android Navigation 3."
