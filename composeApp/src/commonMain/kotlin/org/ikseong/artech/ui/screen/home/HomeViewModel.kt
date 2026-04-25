@@ -81,7 +81,8 @@ class HomeViewModel(
 
         loadJob = viewModelScope.launch {
             try {
-                val sections = composeHomeSections()
+                val sections = loadHomeSections()
+                settingsRepository.addRecommendedArticleIdsSeenToday(sections.todayPicks.map { it.id })
                 _uiState.update {
                     it.copy(
                         todayPicks = sections.todayPicks,
@@ -110,8 +111,9 @@ class HomeViewModel(
         }
     }
 
-    private suspend fun composeHomeSections(): HomeFeedSections {
+    private suspend fun loadHomeSections(): HomeFeedSections {
         val now = currentInstant()
+        val seenTodayPickIds = settingsRepository.getRecommendedArticleIdsSeenToday()
         val candidates = articleRepository.getHomeFeedCandidates()
         val readHistory = historyRepository.getAllWithReadAt().first()
         val favorites = favoriteRepository.getAllWithSavedAt().first()
@@ -120,10 +122,12 @@ class HomeViewModel(
             favorites = favorites,
             now = now,
         )
-        return feedComposer.compose(
+        return composeHomeSections(
+            feedComposer = feedComposer,
             candidates = candidates,
             readArticleIds = readHistory.map { it.article.id }.toSet(),
             profile = profile,
+            seenTodayPickIds = seenTodayPickIds,
             now = now,
         )
     }
@@ -141,6 +145,36 @@ class HomeViewModel(
 
     fun selectCategory(category: String?) {
         _uiEffect.trySend(HomeUiEffect.ScrollToTop)
+    }
+}
+
+internal fun composeHomeSections(
+    feedComposer: HomeFeedComposer,
+    candidates: List<Article>,
+    readArticleIds: Set<Long>,
+    profile: HomeInterestProfile,
+    seenTodayPickIds: Set<Long>,
+    now: Instant,
+): HomeFeedSections {
+    val baseSections = feedComposer.compose(
+        candidates = candidates,
+        readArticleIds = readArticleIds,
+        profile = profile,
+        now = now,
+    )
+    if (seenTodayPickIds.isEmpty()) return baseSections
+
+    val nextTodayPicks = feedComposer.compose(
+        candidates = candidates.filter { it.id !in seenTodayPickIds },
+        readArticleIds = readArticleIds,
+        profile = profile,
+        now = now,
+    ).todayPicks
+
+    return if (nextTodayPicks.isEmpty()) {
+        baseSections
+    } else {
+        baseSections.copy(todayPicks = nextTodayPicks)
     }
 }
 

@@ -117,7 +117,33 @@ class HomeFeedComposerTest {
         )
 
         assertTrue(sections.todayPicks.isNotEmpty())
+        assertEquals(listOf(1L, 2L), sections.todayPicks.map { it.id })
         assertEquals(emptyList(), sections.interestTopics)
+    }
+
+    @Test
+    fun composeHomeSections_skips_seen_today_picks_without_removing_latest_preview() {
+        val candidates = listOf(
+            article(1L, "Android", "Android Weekly", "2026-04-25T10:00:00Z"),
+            article(2L, "AI", "OpenAI", "2026-04-25T09:00:00Z"),
+            article(3L, "Backend", "Ktor", "2026-04-25T08:00:00Z"),
+            article(4L, "Web", "Frontend Focus", "2026-04-25T07:00:00Z"),
+        )
+
+        val sections = composeHomeSections(
+            feedComposer = HomeFeedComposer,
+            candidates = candidates,
+            readArticleIds = emptySet(),
+            profile = HomeInterestProfile(
+                categoryScores = emptyMap(),
+                blogScores = emptyMap(),
+            ),
+            seenTodayPickIds = setOf(1L, 2L, 3L),
+            now = Instant.parse("2026-04-25T12:00:00Z"),
+        )
+
+        assertEquals(listOf(4L), sections.todayPicks.map { it.id })
+        assertEquals(listOf(1L, 2L, 3L, 4L), sections.latestPreview.map { it.id })
     }
 
     private fun article(
