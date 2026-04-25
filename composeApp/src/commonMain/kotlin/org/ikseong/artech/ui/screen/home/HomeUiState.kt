@@ -6,6 +6,7 @@ import org.ikseong.artech.data.model.Article
 data class HomeUiState(
     val todayPicks: List<Article> = emptyList(),
     val interestTopics: List<InterestTopicShortcut> = emptyList(),
+    val interestTopicUnreadTotal: Int = 0,
     val missedArticles: List<Article> = emptyList(),
     val latestPreview: List<Article> = emptyList(),
     val isLoading: Boolean = false,

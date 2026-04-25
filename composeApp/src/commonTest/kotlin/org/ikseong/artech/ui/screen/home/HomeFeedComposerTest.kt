@@ -83,10 +83,11 @@ class HomeFeedComposerTest {
             now = now,
         )
 
-        assertEquals(listOf(1L, 3L, 5L), sections.todayPicks.map { it.id })
+        assertEquals(listOf(1L, 3L, 5L, 7L, 8L), sections.todayPicks.map { it.id })
         assertEquals("Android", sections.interestTopics.first().category)
         assertEquals(3, sections.interestTopics.first().unreadCount)
-        assertEquals(listOf(6L, 4L, 8L), sections.missedArticles.map { it.id })
+        assertEquals(7, sections.interestTopicUnreadTotal)
+        assertEquals(listOf(6L, 4L), sections.missedArticles.map { it.id })
         assertFalse(sections.missedArticles.any { it.id in sections.todayPicks.map { article -> article.id } })
         assertEquals(listOf(1L, 2L, 3L, 5L), sections.latestPreview.map { it.id })
     }
@@ -118,7 +119,8 @@ class HomeFeedComposerTest {
 
         assertTrue(sections.todayPicks.isNotEmpty())
         assertEquals(listOf(1L, 2L), sections.todayPicks.map { it.id })
-        assertEquals(emptyList(), sections.interestTopics)
+        assertEquals(listOf("Android", "AI"), sections.interestTopics.map { it.category })
+        assertEquals(2, sections.interestTopicUnreadTotal)
     }
 
     @Test
@@ -163,6 +165,30 @@ class HomeFeedComposerTest {
 
         assertEquals("QA/Automation", sections.interestTopics.first().category)
         assertEquals(2, sections.interestTopics.first().unreadCount)
+        assertEquals(2, sections.interestTopicUnreadTotal)
+    }
+
+    @Test
+    fun interestTopicUnreadTotal_counts_all_unread_topics_beyond_visible_shortcuts() {
+        val sections = HomeFeedComposer.compose(
+            candidates = listOf(
+                article(1L, "Android", "Android Weekly", "2026-04-25T10:00:00Z"),
+                article(2L, "AI", "OpenAI", "2026-04-25T09:00:00Z"),
+                article(3L, "Back-End", "Backend Blog", "2026-04-25T08:00:00Z"),
+                article(4L, "Front-End", "Frontend Blog", "2026-04-25T07:00:00Z"),
+                article(5L, "Infra", "Infra Blog", "2026-04-25T06:00:00Z"),
+                article(6L, "iOS", "iOS Blog", "2026-04-25T05:00:00Z"),
+            ),
+            readArticleIds = emptySet(),
+            profile = HomeInterestProfile(
+                categoryScores = emptyMap(),
+                blogScores = emptyMap(),
+            ),
+            now = Instant.parse("2026-04-25T12:00:00Z"),
+        )
+
+        assertEquals(5, sections.interestTopics.size)
+        assertEquals(6, sections.interestTopicUnreadTotal)
     }
 
     private fun article(

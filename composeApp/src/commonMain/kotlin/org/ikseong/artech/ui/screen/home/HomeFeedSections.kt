@@ -10,6 +10,7 @@ data class InterestTopicShortcut(
 data class HomeFeedSections(
     val todayPicks: List<Article>,
     val interestTopics: List<InterestTopicShortcut>,
+    val interestTopicUnreadTotal: Int,
     val missedArticles: List<Article>,
     val latestPreview: List<Article>,
 )

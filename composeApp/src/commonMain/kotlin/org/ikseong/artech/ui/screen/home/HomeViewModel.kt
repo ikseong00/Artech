@@ -17,11 +17,13 @@ import org.ikseong.artech.data.repository.ArticleRepository
 import org.ikseong.artech.data.repository.FavoriteRepository
 import org.ikseong.artech.data.repository.HistoryRepository
 import org.ikseong.artech.data.repository.SettingsRepository
+import org.ikseong.artech.data.repository.VisitSessionRepository
 import kotlin.coroutines.cancellation.CancellationException
 
 class HomeViewModel(
     private val articleRepository: ArticleRepository,
     private val settingsRepository: SettingsRepository,
+    private val visitSessionRepository: VisitSessionRepository,
     private val historyRepository: HistoryRepository,
     private val favoriteRepository: FavoriteRepository,
     private val interestProfileCalculator: HomeInterestProfileCalculator,
@@ -38,9 +40,8 @@ class HomeViewModel(
 
     init {
         viewModelScope.launch {
-            val lastVisit = settingsRepository.lastVisitTime.first()
+            val lastVisit = visitSessionRepository.getSessionLastVisitTime()
             _uiState.update { it.copy(lastVisitTime = lastVisit) }
-            settingsRepository.updateLastVisitTime()
             loadHome(refreshingTodayPicks = false)
         }
     }
@@ -87,6 +88,7 @@ class HomeViewModel(
                     it.copy(
                         todayPicks = sections.todayPicks,
                         interestTopics = sections.interestTopics,
+                        interestTopicUnreadTotal = sections.interestTopicUnreadTotal,
                         missedArticles = sections.missedArticles,
                         latestPreview = sections.latestPreview,
                         isLoading = false,

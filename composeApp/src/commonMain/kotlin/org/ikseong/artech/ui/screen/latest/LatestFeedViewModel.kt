@@ -9,20 +9,19 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.ikseong.artech.data.repository.ArticleRepository
 import org.ikseong.artech.data.repository.HistoryRepository
-import org.ikseong.artech.data.repository.SettingsRepository
+import org.ikseong.artech.data.repository.VisitSessionRepository
 import org.ikseong.artech.navigation.Route
 import kotlin.coroutines.cancellation.CancellationException
 
 class LatestFeedViewModel(
     savedStateHandle: SavedStateHandle,
     private val articleRepository: ArticleRepository,
-    private val settingsRepository: SettingsRepository,
+    private val visitSessionRepository: VisitSessionRepository,
     private val historyRepository: HistoryRepository,
 ) : ViewModel() {
 
@@ -41,9 +40,8 @@ class LatestFeedViewModel(
 
     init {
         viewModelScope.launch {
-            val lastVisit = settingsRepository.lastVisitTime.first()
+            val lastVisit = visitSessionRepository.getSessionLastVisitTime()
             _uiState.update { it.copy(lastVisitTime = lastVisit) }
-            settingsRepository.updateLastVisitTime()
             launch { loadCategories() }
             launch {
                 historyRepository.getReadArticleIds().collect { ids ->

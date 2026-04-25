@@ -13,6 +13,7 @@ import org.ikseong.artech.data.repository.FeedbackRepository
 import org.ikseong.artech.data.repository.HistoryRepository
 import org.ikseong.artech.data.repository.SessionManager
 import org.ikseong.artech.data.repository.SettingsRepository
+import org.ikseong.artech.data.repository.VisitSessionRepository
 import org.ikseong.artech.ui.screen.blog.BlogViewModel
 import org.ikseong.artech.ui.screen.bloglist.BlogListViewModel
 import org.ikseong.artech.ui.screen.detail.DetailViewModel
@@ -51,6 +52,7 @@ val dataModule = module {
 
     single { get<DataStoreFactory>().create() }
     single { SettingsRepository(get()) }
+    single { VisitSessionRepository(get<SettingsRepository>()) }
 }
 
 val viewModelModule = module {

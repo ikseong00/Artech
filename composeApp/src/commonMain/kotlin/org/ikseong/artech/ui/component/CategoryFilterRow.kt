@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -22,6 +23,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,6 +41,19 @@ fun CategoryFilterRow(
     categories: List<String> = emptyList(),
 ) {
     var isExpanded by remember { mutableStateOf(false) }
+    val listState = rememberLazyListState()
+
+    LaunchedEffect(selectedCategory, categories, isExpanded) {
+        if (isExpanded) return@LaunchedEffect
+
+        val selectedIndex = selectedCategory
+            ?.let(categories::indexOf)
+            ?.takeIf { it >= 0 }
+            ?.plus(1)
+            ?: 0
+
+        listState.scrollToItem(selectedIndex)
+    }
 
     AnimatedContent(
         targetState = isExpanded,
@@ -83,6 +98,7 @@ fun CategoryFilterRow(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 LazyRow(
+                    state = listState,
                     modifier = Modifier.weight(1f),
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),

@@ -8,8 +8,8 @@ import kotlin.math.abs
 object HomeFeedComposer {
 
     private const val DayInMilliseconds = 24 * 60 * 60 * 1000L
-    private const val TodayPickCount = 3
-    private const val InterestTopicCount = 4
+    private const val TodayPickCount = 5
+    private const val InterestTopicCount = 5
     private const val MissedArticleCount = 3
     private const val LatestPreviewCount = 4
     private const val CategoryWeight = 1.6
@@ -23,6 +23,10 @@ object HomeFeedComposer {
     ): HomeFeedSections {
         val recentCandidates = candidates.distinctBy { it.id }
         val unreadCandidates = recentCandidates.filter { it.id !in readArticleIds }
+        val unreadDisplayCategories = displayCategoriesFor(unreadCandidates)
+        val unreadCountByDisplayCategory = unreadDisplayCategories
+            .groupingBy { it }
+            .eachCount()
         val rankedUnread = unreadCandidates
             .map { article ->
                 ScoredArticle(
@@ -42,9 +46,11 @@ object HomeFeedComposer {
         val todayPicks = pickTodayPicks(rankedUnread)
         val todayPickIds = todayPicks.map { it.id }.toSet()
         val interestTopics = buildInterestTopics(
-            unreadCandidates = unreadCandidates,
+            unreadDisplayCategories = unreadDisplayCategories,
+            unreadCountByDisplayCategory = unreadCountByDisplayCategory,
             profile = profile,
         )
+        val interestTopicUnreadTotal = unreadCountByDisplayCategory.values.sum()
         val missedArticles = rankedUnread
             .asSequence()
             .filter { it.article.id !in todayPickIds }
@@ -67,6 +73,7 @@ object HomeFeedComposer {
         return HomeFeedSections(
             todayPicks = todayPicks,
             interestTopics = interestTopics,
+            interestTopicUnreadTotal = interestTopicUnreadTotal,
             missedArticles = missedArticles,
             latestPreview = latestPreview,
         )
@@ -99,17 +106,17 @@ object HomeFeedComposer {
     }
 
     private fun buildInterestTopics(
-        unreadCandidates: List<Article>,
+        unreadDisplayCategories: List<String>,
+        unreadCountByDisplayCategory: Map<String, Int>,
         profile: HomeInterestProfile,
     ): List<InterestTopicShortcut> {
-        val unreadCountByDisplayCategory = unreadCandidates
-            .mapNotNull { article -> article.category?.let(CategoryGroup::toDisplayName) }
-            .groupingBy { it }
-            .eachCount()
-
-        return profile.topCategories
-            .map(CategoryGroup::toDisplayName)
+        val displayCategories = (
+            profile.topCategories.map(CategoryGroup::toDisplayName) +
+                unreadDisplayCategories
+            )
             .distinct()
+
+        return displayCategories
             .mapNotNull { category ->
                 val unreadCount = unreadCountByDisplayCategory[category] ?: 0
                 if (unreadCount == 0) {
@@ -123,6 +130,13 @@ object HomeFeedComposer {
             }
             .take(InterestTopicCount)
     }
+
+    private fun displayCategoriesFor(articles: List<Article>): List<String> =
+        articles.mapNotNull { article ->
+            article.category
+                ?.takeIf { it.isNotBlank() }
+                ?.let(CategoryGroup::toDisplayName)
+        }
 
     private fun scoredArticleComparator() =
         compareByDescending<ScoredArticle> { it.interestScore + it.recentScore }

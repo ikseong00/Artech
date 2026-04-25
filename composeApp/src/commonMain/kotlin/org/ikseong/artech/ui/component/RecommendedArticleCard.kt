@@ -4,11 +4,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -27,13 +29,19 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import org.ikseong.artech.data.model.Article
+import org.ikseong.artech.data.model.CategoryGroup
 
 @Composable
 fun RecommendedArticleCard(
     article: Article,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    isNew: Boolean = false,
 ) {
+    val displayCategory = article.category
+        ?.takeIf { it.isNotBlank() }
+        ?.let(CategoryGroup::toDisplayName)
+
     Card(
         modifier = modifier
             .width(280.dp)
@@ -70,20 +78,56 @@ fun RecommendedArticleCard(
                     ),
             )
 
+            if (isNew) {
+                Text(
+                    text = "NEW",
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(10.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(MaterialTheme.colorScheme.primary)
+                        .padding(horizontal = 5.dp, vertical = 2.dp),
+                )
+            }
+
             Column(
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .fillMaxWidth()
                     .padding(12.dp),
             ) {
-                Text(
-                    text = article.blogSource,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    maxLines = 1,
-                    modifier = Modifier,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (displayCategory != null) {
+                        Text(
+                            text = displayCategory,
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .sizeIn(maxWidth = 120.dp)
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(MaterialTheme.colorScheme.primary)
+                                .padding(horizontal = 5.dp, vertical = 2.dp),
+                        )
+
+                        Spacer(modifier = Modifier.width(6.dp))
+                    }
+
+                    Text(
+                        text = article.blogSource,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(2.dp))
 

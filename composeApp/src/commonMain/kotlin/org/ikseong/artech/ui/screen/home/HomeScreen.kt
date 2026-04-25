@@ -41,7 +41,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import org.ikseong.artech.ui.component.ArticleCard
 import org.ikseong.artech.ui.component.HomeSectionHeader
-import org.ikseong.artech.ui.component.InterestTopicCard
+import org.ikseong.artech.ui.component.InterestTopicHubCard
 import org.ikseong.artech.ui.component.RecommendedArticleCard
 import org.ikseong.artech.ui.component.ScrollToTopFab
 import org.ikseong.artech.util.PlatformBackHandler
@@ -195,6 +195,7 @@ fun HomeScreen(
                                         RecommendedArticleCard(
                                             article = article,
                                             onClick = { onArticleClick(article.id, article.link) },
+                                            isNew = uiState.lastVisitTime?.let { article.displayDate > it } ?: false,
                                         )
                                     }
                                 }
@@ -203,25 +204,16 @@ fun HomeScreen(
 
                         if (uiState.interestTopics.isNotEmpty()) {
                             item(key = "interest_topics_header") {
-                                HomeSectionHeader(title = "관심 주제")
+                                HomeSectionHeader(title = "관심 주제로 보기")
                             }
 
-                            item(key = "interest_topics_row") {
-                                LazyRow(
-                                    contentPadding = PaddingValues(horizontal = 16.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                ) {
-                                    items(
-                                        items = uiState.interestTopics,
-                                        key = { "topic_${it.category}" },
-                                    ) { topic ->
-                                        InterestTopicCard(
-                                            category = topic.category,
-                                            unreadCount = topic.unreadCount,
-                                            onClick = { onTopicClick(topic.category) },
-                                        )
-                                    }
-                                }
+                            item(key = "interest_topics_hub") {
+                                InterestTopicHubCard(
+                                    topics = uiState.interestTopics,
+                                    unreadTotal = uiState.interestTopicUnreadTotal,
+                                    onTopicClick = onTopicClick,
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                )
                             }
                         }
 
