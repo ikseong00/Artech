@@ -19,6 +19,7 @@ import org.ikseong.artech.ui.screen.detail.DetailViewModel
 import org.ikseong.artech.ui.screen.favorite.FavoriteViewModel
 import org.ikseong.artech.ui.screen.history.HistoryViewModel
 import org.ikseong.artech.ui.screen.home.HomeViewModel
+import org.ikseong.artech.ui.screen.latest.LatestFeedViewModel
 import org.ikseong.artech.ui.screen.onboarding.OnboardingViewModel
 import org.ikseong.artech.ui.screen.settings.SettingsViewModel
 import org.koin.core.module.dsl.viewModelOf
@@ -51,6 +52,7 @@ val dataModule = module {
 val viewModelModule = module {
     viewModelOf(::OnboardingViewModel)
     viewModelOf(::HomeViewModel)
+    viewModelOf(::LatestFeedViewModel)
     viewModelOf(::FavoriteViewModel)
     viewModelOf(::HistoryViewModel)
     viewModelOf(::DetailViewModel)

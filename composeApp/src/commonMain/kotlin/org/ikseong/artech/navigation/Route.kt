@@ -11,6 +11,9 @@ sealed interface Route {
     data object Home : Route
 
     @Serializable
+    data class LatestFeed(val initialCategory: String? = null) : Route
+
+    @Serializable
     data object Favorite : Route
 
     @Serializable
