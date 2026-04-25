@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace the current scroll-heavy home feed with a multi-queue home screen backed by local-interest personalization, while moving the old list browsing experience into a dedicated latest-feed screen.
+**Goal:** Replace the current scroll-heavy home feed with a multi-queue home screen backed by local-interest personalization, with a clear `관심 주제로 보기` hub between recommendations and the feed list.
 
-**Architecture:** Keep `ArticleRepository` as the raw article source, add a `HomeInterestProfileCalculator` plus `HomeFeedComposer` for home-specific ranking, and split the current home list flow into a new `LatestFeedScreen` route. The new `HomeViewModel` becomes an orchestrator for section state instead of owning recommendation logic directly.
+**Architecture:** Keep `ArticleRepository` as the raw article source, add a `HomeInterestProfileCalculator` plus `HomeFeedComposer` for home-specific ranking, and split the current home list flow into a new `LatestFeedScreen` route. The new `HomeViewModel` becomes an orchestrator for section state instead of owning recommendation logic directly. The middle home section is rendered as one topic hub card with topic chips, not a row of article-like topic cards.
 
 **Tech Stack:** Kotlin Multiplatform, Compose Multiplatform, Koin, Navigation Compose, Room KMP, DataStore, kotlin.test
 
@@ -23,7 +23,7 @@
 - `composeApp/src/commonMain/kotlin/org/ikseong/artech/ui/screen/latest/LatestFeedViewModel.kt`
 - `composeApp/src/commonMain/kotlin/org/ikseong/artech/ui/screen/latest/LatestFeedScreen.kt`
 - `composeApp/src/commonMain/kotlin/org/ikseong/artech/ui/component/HomeSectionHeader.kt`
-- `composeApp/src/commonMain/kotlin/org/ikseong/artech/ui/component/InterestTopicCard.kt`
+- `composeApp/src/commonMain/kotlin/org/ikseong/artech/ui/component/InterestTopicHubCard.kt`
 - `composeApp/src/commonTest/kotlin/org/ikseong/artech/ui/screen/home/HomeInterestProfileCalculatorTest.kt`
 - `composeApp/src/commonTest/kotlin/org/ikseong/artech/ui/screen/home/HomeFeedComposerTest.kt`
 - `composeApp/src/commonTest/kotlin/org/ikseong/artech/ui/screen/latest/LatestFeedUiStateTest.kt`
@@ -294,9 +294,10 @@ class HomeFeedComposerTest {
             now = now,
         )
 
-        assertEquals(listOf(1L, 3L, 5L), result.todayPicks.map { it.id })
-        assertTrue(result.missedArticles.any { it.id == 5L })
+        assertEquals(listOf(1L, 3L, 4L, 5L), result.todayPicks.map { it.id })
+        assertTrue(result.missedArticles.none { missed -> missed.id in result.todayPicks.map { it.id } })
         assertEquals("Android", result.interestTopics.first().category)
+        assertEquals(4, result.interestTopicUnreadTotal)
     }
 
     private fun article(id: Long, category: String, blog: String, publishedAt: String) = Article(
@@ -334,6 +335,7 @@ data class InterestTopicShortcut(
 data class HomeFeedSections(
     val todayPicks: List<Article> = emptyList(),
     val interestTopics: List<InterestTopicShortcut> = emptyList(),
+    val interestTopicUnreadTotal: Int = 0,
     val missedArticles: List<Article> = emptyList(),
     val latestPreview: List<Article> = emptyList(),
 )
@@ -362,9 +364,25 @@ class HomeFeedComposer {
         val ranked = unreadCandidates
             .sortedByDescending { score(it, profile, now) }
 
-        val todayPicks = ranked.distinctBy { it.category ?: it.blogSource }.take(3)
-        val interestTopics = profile.topCategories
-            .take(4)
+        val todayPicks = mutableListOf<Article>()
+        val selectedCategories = mutableSetOf<String>()
+
+        ranked.forEach { article ->
+            if (todayPicks.size >= 5) return@forEach
+            val category = article.category.orEmpty()
+            if (category.isNotEmpty() && category in selectedCategories) return@forEach
+            todayPicks += article
+            if (category.isNotEmpty()) selectedCategories += category
+        }
+
+        ranked.forEach { article ->
+            if (todayPicks.size >= 5) return@forEach
+            if (todayPicks.any { it.id == article.id }) return@forEach
+            todayPicks += article
+        }
+        val topicCategories = (profile.topCategories + unreadCandidates.mapNotNull { it.category })
+            .distinct()
+        val interestTopics = topicCategories
             .map { category ->
                 InterestTopicShortcut(
                     category = category,
@@ -372,6 +390,8 @@ class HomeFeedComposer {
                 )
             }
             .filter { it.unreadCount > 0 }
+            .take(5)
+        val interestTopicUnreadTotal = interestTopics.sumOf { it.unreadCount }
         val missedArticles = ranked
             .filter { article -> article.id !in todayPicks.map { it.id } }
             .filter { article -> ageInDays(article, now) in 2..7 }
@@ -381,6 +401,7 @@ class HomeFeedComposer {
         return HomeFeedSections(
             todayPicks = todayPicks,
             interestTopics = interestTopics,
+            interestTopicUnreadTotal = interestTopicUnreadTotal,
             missedArticles = missedArticles,
             latestPreview = latestPreview,
         )
@@ -733,9 +754,9 @@ git commit -m "feat: move list browsing to latest feed screen"
     @Test
     fun `cold start still produces a today picks section`() {
         val candidates = listOf(
-            article(1, "Android"),
-            article(2, "AI"),
-            article(3, "Server"),
+            article(1, "Android", "Kakao", "2026-04-25T08:00:00Z"),
+            article(2, "AI", "OpenAI", "2026-04-25T07:00:00Z"),
+            article(3, "Server", "Toss", "2026-04-24T20:00:00Z"),
         )
 
         val result = composer.compose(
@@ -746,7 +767,8 @@ git commit -m "feat: move list browsing to latest feed screen"
         )
 
         assertTrue(result.todayPicks.isNotEmpty())
-        assertTrue(result.interestTopics.isEmpty())
+        assertEquals(listOf("Android", "AI", "Server"), result.interestTopics.map { it.category })
+        assertEquals(3, result.interestTopicUnreadTotal)
     }
 ```
 
@@ -754,7 +776,7 @@ git commit -m "feat: move list browsing to latest feed screen"
 
 Run: `./gradlew :composeApp:iosSimulatorArm64Test --rerun-tasks`
 
-Expected: FAIL because `compose()` does not yet guarantee non-empty `todayPicks` when `HomeInterestProfile()` is empty.
+Expected: FAIL because `compose()` does not yet guarantee non-empty `todayPicks` and default topic chips when `HomeInterestProfile()` is empty.
 
 - [ ] **Step 3: Rewrite HomeUiState and HomeViewModel to load sections instead of a long list**
 
@@ -763,6 +785,7 @@ Expected: FAIL because `compose()` does not yet guarantee non-empty `todayPicks`
 data class HomeUiState(
     val todayPicks: List<Article> = emptyList(),
     val interestTopics: List<InterestTopicShortcut> = emptyList(),
+    val interestTopicUnreadTotal: Int = 0,
     val missedArticles: List<Article> = emptyList(),
     val latestPreview: List<Article> = emptyList(),
     val isLoading: Boolean = false,
@@ -801,6 +824,7 @@ class HomeViewModel(
                 it.copy(
                     todayPicks = sections.todayPicks,
                     interestTopics = sections.interestTopics,
+                    interestTopicUnreadTotal = sections.interestTopicUnreadTotal,
                     missedArticles = sections.missedArticles,
                     latestPreview = sections.latestPreview,
                     isLoading = false,
@@ -850,7 +874,7 @@ git commit -m "feat: load home as multi-queue sections"
 
 **Files:**
 - Create: `composeApp/src/commonMain/kotlin/org/ikseong/artech/ui/component/HomeSectionHeader.kt`
-- Create: `composeApp/src/commonMain/kotlin/org/ikseong/artech/ui/component/InterestTopicCard.kt`
+- Create: `composeApp/src/commonMain/kotlin/org/ikseong/artech/ui/component/InterestTopicHubCard.kt`
 - Modify: `composeApp/src/commonMain/kotlin/org/ikseong/artech/ui/screen/home/HomeScreen.kt`
 - Modify: `composeApp/src/commonMain/kotlin/org/ikseong/artech/navigation/AppNavigation.kt`
 
@@ -859,9 +883,10 @@ git commit -m "feat: load home as multi-queue sections"
 ```text
 Manual smoke expectations before coding:
 1. Home no longer shows the old category filter row at the top.
-2. Home shows sections in this order: today picks, interest topics, missed articles, latest preview.
+2. Home shows sections in this order: today picks, interest topic hub, missed articles, latest preview.
 3. "Latest" CTA opens Route.LatestFeed.
-4. Article tap still opens DetailScreen.
+4. Topic chip tap opens Route.LatestFeed with that initial category.
+5. Article tap still opens DetailScreen.
 ```
 
 - [ ] **Step 2: Run Android compilation to capture the current failing baseline**
@@ -894,19 +919,62 @@ fun HomeSectionHeader(
 ```
 
 ```kotlin
-// composeApp/src/commonMain/kotlin/org/ikseong/artech/ui/component/InterestTopicCard.kt
+// composeApp/src/commonMain/kotlin/org/ikseong/artech/ui/component/InterestTopicHubCard.kt
 @Composable
-fun InterestTopicCard(
-    topic: InterestTopicShortcut,
+fun InterestTopicHubCard(
+    topics: List<InterestTopicShortcut>,
+    unreadTotal: Int,
     onClick: (String) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().clickable { onClick(topic.category) },
-        shape = RoundedCornerShape(12.dp),
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
     ) {
         Column(Modifier.padding(16.dp)) {
-            Text(topic.category, style = MaterialTheme.typography.titleSmall)
-            Text("${topic.unreadCount}개의 안 읽은 글", style = MaterialTheme.typography.bodySmall)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "추천이 애매하면 주제로 좁혀보세요",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        text = "읽기 이력 기준으로 안 본 글이 많은 관심 주제입니다.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Text(
+                    text = "${unreadTotal}개",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary,
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                topics.forEach { topic ->
+                    Text(
+                        text = "${CategoryGroup.toDisplayName(topic.category)} ${topic.unreadCount}",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(999.dp))
+                            .clickable { onClick(topic.category) }
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+                            .padding(horizontal = 10.dp, vertical = 7.dp),
+                    )
+                }
+            }
         }
     }
 }
@@ -942,23 +1010,27 @@ fun HomeScreen(
         }
         item("today_picks") {
             Column {
-                HomeSectionHeader(title = "오늘 읽을 글")
-                uiState.todayPicks.forEach { article ->
-                    ArticleCard(
-                        article = article,
-                        onClick = { onArticleClick(article.id, article.link) },
-                        onBlogClick = onBlogClick,
-                    )
+                HomeSectionHeader(title = "오늘의 추천")
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    items(uiState.todayPicks, key = { it.id }) { article ->
+                        RecommendedArticleCard(
+                            article = article,
+                            onClick = { onArticleClick(article.id, article.link) },
+                            isNew = uiState.lastVisitTime?.let { article.displayDate > it } ?: false,
+                        )
+                    }
                 }
             }
         }
         item("topics") {
-            Column {
-                HomeSectionHeader(title = "관심 주제에서 고르기")
-                uiState.interestTopics.forEach { topic ->
-                    InterestTopicCard(topic = topic, onClick = onTopicClick)
-                }
-            }
+            HomeSectionHeader(title = "관심 주제로 보기")
+            InterestTopicHubCard(
+                topics = uiState.interestTopics,
+                unreadTotal = uiState.interestTopicUnreadTotal,
+                onClick = onTopicClick,
+            )
         }
         item("missed") {
             Column {
@@ -1023,15 +1095,17 @@ Manual smoke:
 
 1. Launch the app.
 2. Confirm Home shows section blocks instead of the old filter-first list.
-3. Tap one article in `오늘 읽을 글`; verify `DetailScreen` opens.
-4. Tap `전체 보기` in the latest section; verify `LatestFeedScreen` opens.
+3. Confirm `관심 주제로 보기` renders as one hub card with topic chips and unread counts.
+4. Tap one article in `오늘의 추천`; verify `DetailScreen` opens.
+5. Tap one topic chip; verify `LatestFeedScreen` opens with that category selected.
+6. Tap `전체 보기` in the latest section; verify `LatestFeedScreen` opens.
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add \
   composeApp/src/commonMain/kotlin/org/ikseong/artech/ui/component/HomeSectionHeader.kt \
-  composeApp/src/commonMain/kotlin/org/ikseong/artech/ui/component/InterestTopicCard.kt \
+  composeApp/src/commonMain/kotlin/org/ikseong/artech/ui/component/InterestTopicHubCard.kt \
   composeApp/src/commonMain/kotlin/org/ikseong/artech/ui/screen/home/HomeScreen.kt \
   composeApp/src/commonMain/kotlin/org/ikseong/artech/navigation/AppNavigation.kt
 git commit -m "feat: render multi-queue home screen"
@@ -1049,7 +1123,7 @@ git commit -m "feat: render multi-queue home screen"
 
 ```text
 Verification checklist:
-1. Cold start shows non-empty today picks.
+1. Cold start shows non-empty today picks and a non-empty `관심 주제로 보기` hub.
 2. Home hides old recommendation refresh quota UI.
 3. LatestFeedScreen owns category filter + unread filter + pagination.
 4. Returning from detail keeps both Home and LatestFeed scroll position behavior intact.
@@ -1101,7 +1175,7 @@ git commit -m "chore: finalize multi-queue home feed rollout"
 
 ## Spec Coverage Check
 
-- `오늘 읽을 글`, `관심 주제에서 고르기`, `놓치기 쉬운 글`, `최신 글` 섹션: Task 2, Task 4, Task 5
+- `오늘의 추천`, `관심 주제로 보기`, `놓치기 쉬운 글`, `최신 글` 섹션: Task 2, Task 4, Task 5
 - 로컬 관심사 계산(읽기이력 + 즐겨찾기 가중치): Task 1
 - 넓은 홈 후보 기사 풀: Task 2
 - 최신 피드 분리 (`LatestFeedScreen`): Task 3, Task 5
