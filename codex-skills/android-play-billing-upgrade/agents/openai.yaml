@@ -1,0 +1,4 @@
+interface:
+  display_name: "Android Play Billing Upgrade"
+  short_description: "Upgrade Google Play Billing Library"
+  default_prompt: "Use $android-play-billing-upgrade to upgrade Google Play Billing Library in this Android project."

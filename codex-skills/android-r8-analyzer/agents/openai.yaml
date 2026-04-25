@@ -1,0 +1,4 @@
+interface:
+  display_name: "Android R8 Analyzer"
+  short_description: "Analyze R8 and ProGuard keep rules"
+  default_prompt: "Use $android-r8-analyzer to analyze R8 and ProGuard keep rules in this Android project."
