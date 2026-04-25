@@ -49,6 +49,76 @@ class HomeInterestProfileCalculatorTest {
         assertTrue(profile.scoreForBlog("OpenAI") > profile.scoreForBlog("Kakao"))
     }
 
+    @Test
+    fun applies_recency_buckets_and_ignores_blank_keys_while_normalizing_lookups() {
+        val now = Instant.parse("2026-04-25T12:00:00Z")
+        val reads = listOf(
+            HistoryArticle(
+                article = article(
+                    id = 10L,
+                    category = " AI ",
+                    blogSource = " OpenAI ",
+                ),
+                readAt = Instant.parse("2026-04-24T12:00:00Z"),
+            ),
+            HistoryArticle(
+                article = article(
+                    id = 11L,
+                    category = "AI",
+                    blogSource = "OpenAI",
+                ),
+                readAt = Instant.parse("2026-04-20T12:00:00Z"),
+            ),
+            HistoryArticle(
+                article = article(
+                    id = 12L,
+                    category = "AI",
+                    blogSource = "OpenAI",
+                ),
+                readAt = Instant.parse("2026-04-15T12:00:00Z"),
+            ),
+            HistoryArticle(
+                article = article(
+                    id = 13L,
+                    category = "AI",
+                    blogSource = "OpenAI",
+                ),
+                readAt = Instant.parse("2026-04-10T12:00:00Z"),
+            ),
+            HistoryArticle(
+                article = article(
+                    id = 14L,
+                    category = "   ",
+                    blogSource = "",
+                ),
+                readAt = Instant.parse("2026-04-24T12:00:00Z"),
+            ),
+        )
+        val favorites = listOf(
+            SavedFavoriteArticle(
+                article = article(
+                    id = 15L,
+                    category = " AI ",
+                    blogSource = " OpenAI ",
+                ),
+                savedAt = Instant.parse("2026-04-11T12:00:00Z"),
+            ),
+        )
+
+        val profile = HomeInterestProfileCalculator.calculate(
+            readHistory = reads,
+            favorites = favorites,
+            now = now,
+        )
+
+        assertEquals(3.5, profile.scoreForCategory("AI"))
+        assertEquals(3.5, profile.scoreForCategory(" AI "))
+        assertEquals(3.5, profile.scoreForBlog("OpenAI"))
+        assertEquals(3.5, profile.scoreForBlog(" OpenAI "))
+        assertEquals(0.0, profile.scoreForCategory(""))
+        assertEquals(listOf("AI"), profile.topCategories)
+    }
+
     private fun article(
         id: Long,
         category: String,
