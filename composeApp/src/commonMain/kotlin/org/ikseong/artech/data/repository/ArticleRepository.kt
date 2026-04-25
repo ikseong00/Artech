@@ -47,6 +47,19 @@ class ArticleRepository(private val client: SupabaseClient) {
             .map { it.toArticle() }
     }
 
+    suspend fun getHomeFeedCandidates(limit: Int = HOME_FEED_CANDIDATE_SIZE): List<Article> {
+        return client.from(TABLE_NAME)
+            .select {
+                filter {
+                    neq("primary_category", EXCLUDED_CATEGORY)
+                }
+                order("published_at", Order.DESCENDING)
+                range(0, (limit - 1).toLong())
+            }
+            .decodeList<ArticleDto>()
+            .map { it.toArticle() }
+    }
+
     suspend fun searchArticles(
         keyword: String,
         category: String? = null,
@@ -207,5 +220,6 @@ class ArticleRepository(private val client: SupabaseClient) {
         private const val BLOG_SOURCES_TABLE = "blog_sources"
         private const val EXCLUDED_CATEGORY = "Hiring"
         const val DEFAULT_PAGE_SIZE = 20
+        const val HOME_FEED_CANDIDATE_SIZE = 100
     }
 }
