@@ -146,6 +146,25 @@ class HomeFeedComposerTest {
         assertEquals(listOf(1L, 2L, 3L, 4L), sections.latestPreview.map { it.id })
     }
 
+    @Test
+    fun interestTopics_use_display_category_for_grouped_categories() {
+        val sections = HomeFeedComposer.compose(
+            candidates = listOf(
+                article(1L, "QA", "QA Blog", "2026-04-25T10:00:00Z"),
+                article(2L, "Automation", "Automation Blog", "2026-04-25T09:00:00Z"),
+            ),
+            readArticleIds = emptySet(),
+            profile = HomeInterestProfile(
+                categoryScores = mapOf("QA" to 3.0),
+                blogScores = emptyMap(),
+            ),
+            now = Instant.parse("2026-04-25T12:00:00Z"),
+        )
+
+        assertEquals("QA/Automation", sections.interestTopics.first().category)
+        assertEquals(2, sections.interestTopics.first().unreadCount)
+    }
+
     private fun article(
         id: Long,
         category: String,

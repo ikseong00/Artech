@@ -2,6 +2,7 @@ package org.ikseong.artech.ui.screen.home
 
 import kotlinx.datetime.Instant
 import org.ikseong.artech.data.model.Article
+import org.ikseong.artech.data.model.CategoryGroup
 import kotlin.math.abs
 
 object HomeFeedComposer {
@@ -100,19 +101,28 @@ object HomeFeedComposer {
     private fun buildInterestTopics(
         unreadCandidates: List<Article>,
         profile: HomeInterestProfile,
-    ): List<InterestTopicShortcut> = profile.topCategories
-        .mapNotNull { category ->
-            val unreadCount = unreadCandidates.count { normalize(it.category) == category }
-            if (unreadCount == 0) {
-                null
-            } else {
-                InterestTopicShortcut(
-                    category = category,
-                    unreadCount = unreadCount,
-                )
+    ): List<InterestTopicShortcut> {
+        val unreadCountByDisplayCategory = unreadCandidates
+            .mapNotNull { article -> article.category?.let(CategoryGroup::toDisplayName) }
+            .groupingBy { it }
+            .eachCount()
+
+        return profile.topCategories
+            .map(CategoryGroup::toDisplayName)
+            .distinct()
+            .mapNotNull { category ->
+                val unreadCount = unreadCountByDisplayCategory[category] ?: 0
+                if (unreadCount == 0) {
+                    null
+                } else {
+                    InterestTopicShortcut(
+                        category = category,
+                        unreadCount = unreadCount,
+                    )
+                }
             }
-        }
-        .take(InterestTopicCount)
+            .take(InterestTopicCount)
+    }
 
     private fun scoredArticleComparator() =
         compareByDescending<ScoredArticle> { it.interestScore + it.recentScore }
