@@ -1,0 +1,18 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - banner [ref=e4]:
+      - img "Artech" [ref=e5]
+      - generic [ref=e6]:
+        - text: Artech
+        - paragraph [ref=e7]: 일반 문의
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]: 제목 *
+          - textbox "문의 제목" [ref=e12]
+        - generic [ref=e13]:
+          - generic [ref=e14]: 내용 *
+          - textbox "문의 내용을 입력해주세요" [ref=e15]
+      - paragraph [ref=e16]: 비밀번호, 주민번호 등 민감 정보를 입력하지 마세요
+    - button "제출" [ref=e18]
+  - alert [ref=e19]

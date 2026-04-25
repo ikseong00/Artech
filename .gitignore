@@ -18,6 +18,10 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
 
+# Local Codex-only gstack install
+.agents/skills/gstack*
+.codex/gstack-src/
+
 # Created by https://www.toptal.com/developers/gitignore/api/android,androidstudio,kotlin,swift,swiftpackagemanager,swiftpm,xcode,xcodeinjection,intellij+iml
 # Edit at https://www.toptal.com/developers/gitignore?templates=android,androidstudio,kotlin,swift,swiftpackagemanager,swiftpm,xcode,xcodeinjection,intellij+iml
 
@@ -222,6 +226,10 @@ playground.xcworkspace
 # .swiftpm
 
 .build/
+
+# Local agent/worktree artifacts
+.worktrees/
+.superpowers/
 
 # CocoaPods
 # We recommend against adding the Pods directory to your .gitignore. However

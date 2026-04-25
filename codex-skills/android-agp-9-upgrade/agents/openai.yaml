@@ -1,0 +1,4 @@
+interface:
+  display_name: "Android AGP 9 Upgrade"
+  short_description: "Migrate Android Gradle Plugin to 9"
+  default_prompt: "Use $android-agp-9-upgrade to migrate this Android project to AGP 9."

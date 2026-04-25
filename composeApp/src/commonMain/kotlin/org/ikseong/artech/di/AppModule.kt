@@ -13,12 +13,16 @@ import org.ikseong.artech.data.repository.FeedbackRepository
 import org.ikseong.artech.data.repository.HistoryRepository
 import org.ikseong.artech.data.repository.SessionManager
 import org.ikseong.artech.data.repository.SettingsRepository
+import org.ikseong.artech.data.repository.VisitSessionRepository
 import org.ikseong.artech.ui.screen.blog.BlogViewModel
 import org.ikseong.artech.ui.screen.bloglist.BlogListViewModel
 import org.ikseong.artech.ui.screen.detail.DetailViewModel
 import org.ikseong.artech.ui.screen.favorite.FavoriteViewModel
 import org.ikseong.artech.ui.screen.history.HistoryViewModel
+import org.ikseong.artech.ui.screen.home.HomeFeedComposer
+import org.ikseong.artech.ui.screen.home.HomeInterestProfileCalculator
 import org.ikseong.artech.ui.screen.home.HomeViewModel
+import org.ikseong.artech.ui.screen.latest.LatestFeedViewModel
 import org.ikseong.artech.ui.screen.onboarding.OnboardingViewModel
 import org.ikseong.artech.ui.screen.settings.SettingsViewModel
 import org.koin.core.module.dsl.viewModelOf
@@ -43,14 +47,18 @@ val dataModule = module {
 
     single { FavoriteRepository(get()) }
     single { HistoryRepository(get()) }
+    single { HomeInterestProfileCalculator }
+    single { HomeFeedComposer }
 
     single { get<DataStoreFactory>().create() }
     single { SettingsRepository(get()) }
+    single { VisitSessionRepository(get<SettingsRepository>()) }
 }
 
 val viewModelModule = module {
     viewModelOf(::OnboardingViewModel)
     viewModelOf(::HomeViewModel)
+    viewModelOf(::LatestFeedViewModel)
     viewModelOf(::FavoriteViewModel)
     viewModelOf(::HistoryViewModel)
     viewModelOf(::DetailViewModel)

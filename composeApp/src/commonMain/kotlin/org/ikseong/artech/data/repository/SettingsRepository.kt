@@ -17,7 +17,7 @@ import org.ikseong.artech.data.model.ThemeMode
 
 class SettingsRepository(
     private val dataStore: DataStore<Preferences>,
-) {
+) : VisitSessionStorage {
     val themeMode: Flow<ThemeMode> = dataStore.data.map { preferences ->
         val name = preferences[THEME_MODE_KEY]
         name?.let {
@@ -25,7 +25,7 @@ class SettingsRepository(
         } ?: ThemeMode.SYSTEM
     }
 
-    val lastVisitTime: Flow<Instant?> = dataStore.data.map { preferences ->
+    override val lastVisitTime: Flow<Instant?> = dataStore.data.map { preferences ->
         preferences[LAST_VISIT_TIME_KEY]?.let { Instant.fromEpochMilliseconds(it) }
     }
 
@@ -35,7 +35,7 @@ class SettingsRepository(
         }
     }
 
-    suspend fun updateLastVisitTime() {
+    override suspend fun updateLastVisitTime() {
         dataStore.edit { preferences ->
             preferences[LAST_VISIT_TIME_KEY] = kotlin.time.Clock.System.now().toEpochMilliseconds()
         }
@@ -60,6 +60,8 @@ class SettingsRepository(
         dataStore.edit { preferences ->
             preferences.remove(SCROLL_POSITION_KEY)
             preferences.remove(SCROLL_OFFSET_KEY)
+            preferences.remove(LEGACY_SCROLL_POSITION_KEY)
+            preferences.remove(LEGACY_SCROLL_OFFSET_KEY)
         }
     }
 
@@ -132,12 +134,21 @@ class SettingsRepository(
         const val MAX_RECOMMEND_REFRESHES = 5
         private val THEME_MODE_KEY = stringPreferencesKey("theme_mode")
         private val LAST_VISIT_TIME_KEY = longPreferencesKey("last_visit_time")
-        private val SCROLL_POSITION_KEY = intPreferencesKey("scroll_position")
-        private val SCROLL_OFFSET_KEY = intPreferencesKey("scroll_offset")
+        private val SCROLL_POSITION_KEY = intPreferencesKey(HomeScrollPositionKeys.POSITION)
+        private val SCROLL_OFFSET_KEY = intPreferencesKey(HomeScrollPositionKeys.OFFSET)
+        private val LEGACY_SCROLL_POSITION_KEY = intPreferencesKey(HomeScrollPositionKeys.LEGACY_POSITION)
+        private val LEGACY_SCROLL_OFFSET_KEY = intPreferencesKey(HomeScrollPositionKeys.LEGACY_OFFSET)
         private val SKIPPED_OPTIONAL_VERSION_KEY = stringPreferencesKey("skipped_optional_version")
         private val RECOMMEND_REFRESH_DATE_KEY = stringPreferencesKey("recommend_refresh_date")
         private val RECOMMEND_REFRESH_COUNT_KEY = intPreferencesKey("recommend_refresh_count")
         private val RECOMMEND_SEEN_ARTICLE_IDS_DATE_KEY = stringPreferencesKey("recommend_seen_article_ids_date")
         private val RECOMMEND_SEEN_ARTICLE_IDS_KEY = stringSetPreferencesKey("recommend_seen_article_ids")
     }
+}
+
+internal object HomeScrollPositionKeys {
+    const val POSITION = "home_feed_v2_scroll_position"
+    const val OFFSET = "home_feed_v2_scroll_offset"
+    const val LEGACY_POSITION = "scroll_position"
+    const val LEGACY_OFFSET = "scroll_offset"
 }

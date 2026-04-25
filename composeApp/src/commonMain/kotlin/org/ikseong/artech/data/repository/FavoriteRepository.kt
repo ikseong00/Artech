@@ -6,12 +6,17 @@ import kotlinx.coroutines.flow.map
 import org.ikseong.artech.data.local.dao.FavoriteDao
 import org.ikseong.artech.data.local.entity.toArticle
 import org.ikseong.artech.data.local.entity.toFavoriteEntity
+import org.ikseong.artech.data.local.entity.toSavedFavoriteArticle
 import org.ikseong.artech.data.model.Article
+import org.ikseong.artech.data.model.SavedFavoriteArticle
 
 class FavoriteRepository(private val favoriteDao: FavoriteDao) {
 
     fun getAll(): Flow<List<Article>> =
         favoriteDao.getAll().map { entities -> entities.map { it.toArticle() } }
+
+    fun getAllWithSavedAt(): Flow<List<SavedFavoriteArticle>> =
+        favoriteDao.getAll().map { entities -> entities.map { it.toSavedFavoriteArticle() } }
 
     fun isFavorite(articleId: Long): Flow<Boolean> =
         favoriteDao.isFavorite(articleId)

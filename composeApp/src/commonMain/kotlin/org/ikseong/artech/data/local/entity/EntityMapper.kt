@@ -4,6 +4,7 @@ import kotlinx.datetime.Instant
 import kotlin.time.Clock
 import org.ikseong.artech.data.model.Article
 import org.ikseong.artech.data.model.HistoryArticle
+import org.ikseong.artech.data.model.SavedFavoriteArticle
 
 fun Article.toFavoriteEntity(): FavoriteEntity = FavoriteEntity(
     articleId = id,
@@ -28,6 +29,11 @@ fun FavoriteEntity.toArticle(): Article = Article(
     publishedAt = publishedAt?.let { Instant.fromEpochMilliseconds(it) },
     createdAt = createdAt?.let { Instant.fromEpochMilliseconds(it) },
     thumbnailUrl = thumbnailUrl,
+)
+
+fun FavoriteEntity.toSavedFavoriteArticle(): SavedFavoriteArticle = SavedFavoriteArticle(
+    article = toArticle(),
+    savedAt = Instant.fromEpochMilliseconds(savedAt),
 )
 
 fun Article.toReadHistoryEntity(): ReadHistoryEntity = ReadHistoryEntity(

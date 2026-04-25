@@ -1,0 +1,4 @@
+interface:
+  display_name: "Android Compose XML Migration"
+  short_description: "Migrate Android XML layouts to Compose"
+  default_prompt: "Use $android-compose-xml-migration to migrate an Android XML layout to Jetpack Compose."

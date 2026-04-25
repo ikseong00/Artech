@@ -1,0 +1,4 @@
+interface:
+  display_name: "Android Edge-to-Edge"
+  short_description: "Fix Compose edge-to-edge and insets"
+  default_prompt: "Use $android-edge-to-edge to make this Android Compose UI edge-to-edge safe."
