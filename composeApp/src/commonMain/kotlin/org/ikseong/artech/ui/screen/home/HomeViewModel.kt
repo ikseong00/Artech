@@ -135,17 +135,6 @@ class HomeViewModel(
     private fun currentInstant(): Instant =
         Instant.fromEpochMilliseconds(kotlin.time.Clock.System.now().toEpochMilliseconds())
 
-    fun loadArticles() {
-        loadHome()
-    }
-
-    fun loadMore() = Unit
-
-    fun toggleUnreadFilter() = Unit
-
-    fun selectCategory(category: String?) {
-        _uiEffect.trySend(HomeUiEffect.ScrollToTop)
-    }
 }
 
 internal fun composeHomeSections(
@@ -177,28 +166,3 @@ internal fun composeHomeSections(
         baseSections.copy(todayPicks = nextTodayPicks)
     }
 }
-
-// Temporary compatibility for HomeScreen until Task 5 renders sectioned home state.
-internal val HomeUiState.articles: List<Article>
-    get() = latestPreview
-
-internal val HomeUiState.recommendedArticles: List<Article>
-    get() = todayPicks
-
-internal val HomeUiState.recommendRefreshRemaining: Int
-    get() = if (isRefreshingTodayPicks) 0 else 1
-
-internal val HomeUiState.selectedCategory: String?
-    get() = null
-
-internal val HomeUiState.categories: List<String>
-    get() = interestTopics.map { it.category }
-
-internal val HomeUiState.showUnreadOnly: Boolean
-    get() = false
-
-internal val HomeUiState.isLoadingMore: Boolean
-    get() = false
-
-internal val HomeUiState.displayArticles: List<Article>
-    get() = latestPreview

@@ -121,6 +121,12 @@ fun AppNavigation() {
                     onBlogListClick = {
                         navController.navigate(Route.BlogList)
                     },
+                    onLatestFeedClick = {
+                        navController.navigate(Route.LatestFeed())
+                    },
+                    onTopicClick = { category ->
+                        navController.navigate(Route.LatestFeed(initialCategory = category))
+                    },
                 )
             }
             composable<Route.LatestFeed> {

@@ -1,18 +1,15 @@
 package org.ikseong.artech.ui.screen.home
 
-import androidx.compose.foundation.background
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -20,137 +17,81 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.animation.core.animate
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
-import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.unit.Velocity
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.foundation.layout.offset
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
-import org.ikseong.artech.data.repository.SettingsRepository
 import org.ikseong.artech.ui.component.ArticleCard
-import org.ikseong.artech.ui.component.CategoryFilterRow
+import org.ikseong.artech.ui.component.HomeSectionHeader
+import org.ikseong.artech.ui.component.InterestTopicCard
 import org.ikseong.artech.ui.component.RecommendedArticleCard
 import org.ikseong.artech.ui.component.ScrollToTopFab
 import org.ikseong.artech.util.PlatformBackHandler
 import org.ikseong.artech.util.rememberExitAppAction
 import org.koin.compose.viewmodel.koinViewModel
-import kotlin.time.ExperimentalTime
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     onArticleClick: (articleId: Long, link: String) -> Unit = { _, _ -> },
     onBlogClick: (String) -> Unit = {},
     onBlogListClick: () -> Unit = {},
+    onLatestFeedClick: () -> Unit = {},
+    onTopicClick: (String) -> Unit = {},
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
-    val recommendedListState = rememberLazyListState()
+    val todayPicksListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
     val exitApp = rememberExitAppAction()
+    val hasHomeContent = uiState.hasHomeContent()
+    val homeListItemCount = uiState.homeListItemCount()
     val showScrollToTop by remember {
         derivedStateOf { listState.firstVisibleItemIndex > 0 }
     }
     var showExitDialog by remember { mutableStateOf(false) }
 
-    // NestedScrollConnection 기반 필터 접힘/펼침
-    val density = LocalDensity.current
-    var filterHeightPx by remember { mutableFloatStateOf(0f) }
-    var filterOffsetPx by remember { mutableFloatStateOf(0f) }
-
-    val nestedScrollConnection = remember {
-        object : NestedScrollConnection {
-            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                if (filterHeightPx <= 0f) return Offset.Zero
-                val delta = available.y
-                val newOffset = (filterOffsetPx + delta).coerceIn(-filterHeightPx, 0f)
-                val consumed = newOffset - filterOffsetPx
-                filterOffsetPx = newOffset
-                return Offset(0f, consumed)
-            }
-
-            override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                if (filterHeightPx <= 0f) return super.onPostFling(consumed, available)
-                val target = if (filterOffsetPx < -filterHeightPx / 2) -filterHeightPx else 0f
-                animate(filterOffsetPx, target) { value, _ -> filterOffsetPx = value }
-                return super.onPostFling(consumed, available)
-            }
-        }
-    }
-
-    // 리스트 최상단에서 필터 완전 펼침
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0 }
-            .collect { atTop -> if (atTop) filterOffsetPx = 0f }
-    }
-
-    val shouldLoadMore by remember {
-        derivedStateOf {
-            val lastVisibleItem = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
-            val totalItems = listState.layoutInfo.totalItemsCount
-            lastVisibleItem >= totalItems - 3 && totalItems > 0
-        }
-    }
-
-    LaunchedEffect(shouldLoadMore) {
-        if (shouldLoadMore) {
-            viewModel.loadMore()
-        }
-    }
-
     LaunchedEffect(Unit) {
         viewModel.uiEffect.collect { effect ->
             when (effect) {
                 HomeUiEffect.ScrollToTop -> listState.scrollToItem(0)
-                HomeUiEffect.ScrollRecommendedToStart -> recommendedListState.scrollToItem(0)
+                HomeUiEffect.ScrollRecommendedToStart -> todayPicksListState.scrollToItem(0)
             }
         }
     }
 
-    // 앱 시작 시 저장된 스크롤 위치 자동 복원
-    LaunchedEffect(uiState.isLoading) {
-        if (!uiState.isLoading && uiState.articles.isNotEmpty()) {
+    LaunchedEffect(uiState.isLoading, hasHomeContent, homeListItemCount) {
+        if (!uiState.isLoading && hasHomeContent && homeListItemCount > 0) {
             val (savedIndex, savedOffset) = viewModel.getSavedScrollPosition()
             if (savedIndex > 0) {
-                listState.scrollToItem(savedIndex, savedOffset)
+                listState.scrollToItem(
+                    index = savedIndex.coerceAtMost(homeListItemCount - 1),
+                    scrollOffset = savedOffset,
+                )
                 viewModel.clearScrollPosition()
             }
         }
     }
 
-    // 홈에서 뒤로가기 → 스크롤 위치 저장 여부 확인
     PlatformBackHandler(enabled = listState.firstVisibleItemIndex > 0) {
         showExitDialog = true
     }
@@ -207,122 +148,49 @@ fun HomeScreen(
         )
 
         when {
-            uiState.isLoading && uiState.displayArticles.isEmpty() -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator()
-                }
+            uiState.isLoading && !hasHomeContent -> {
+                LoadingState()
             }
 
-            uiState.error != null && uiState.displayArticles.isEmpty() -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = uiState.error ?: "오류가 발생했습니다",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        TextButton(onClick = viewModel::loadArticles) {
-                            Icon(Icons.Filled.Refresh, contentDescription = null)
-                            Text("재시도")
-                        }
-                    }
-                }
+            uiState.error != null && !hasHomeContent -> {
+                ErrorState(
+                    message = uiState.error ?: "오류가 발생했습니다",
+                    onRetryClick = viewModel::loadHome,
+                )
             }
 
-            uiState.displayArticles.isEmpty() -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = if (uiState.showUnreadOnly && uiState.articles.isNotEmpty()) {
-                            "모든 아티클을 읽었습니다"
-                        } else {
-                            "아티클이 없습니다"
-                        },
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
+            !hasHomeContent -> {
+                EmptyState()
             }
 
             else -> {
-                val filterOffsetDp = with(density) { filterOffsetPx.toDp() }
-                val filterHeightDp = with(density) { filterHeightPx.toDp() }
-                val visibleFilterHeight = (filterHeightDp + filterOffsetDp).coerceAtLeast(0.dp)
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clipToBounds()
-                        .nestedScroll(nestedScrollConnection),
-                ) {
+                Box(modifier = Modifier.fillMaxSize()) {
                     LazyColumn(
                         state = listState,
-                        contentPadding = PaddingValues(top = visibleFilterHeight, bottom = 8.dp),
+                        contentPadding = PaddingValues(bottom = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.fillMaxSize(),
                     ) {
-                        if (uiState.recommendedArticles.isNotEmpty() && uiState.selectedCategory == null) {
-                            item(key = "recommended_header") {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(start = 16.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                ) {
-                                    Text(
-                                        text = "오늘의 추천",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onBackground,
-                                        modifier = Modifier.weight(1f),
-                                    )
-                                    val remaining = uiState.recommendRefreshRemaining
-                                    val enabled = remaining > 0
-                                    Text(
-                                        text = "$remaining/${SettingsRepository.MAX_RECOMMEND_REFRESHES}",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = if (enabled) {
-                                            MaterialTheme.colorScheme.onSurfaceVariant
-                                        } else {
-                                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
-                                        },
-                                    )
-                                    TextButton(
-                                        onClick = viewModel::refreshRecommendations,
-                                        enabled = enabled,
-                                        contentPadding = PaddingValues(horizontal = 8.dp),
-                                    ) {
-                                        Text(
-                                            text = "새로고침",
-                                            style = MaterialTheme.typography.labelMedium,
-                                        )
-                                        Spacer(modifier = Modifier.size(4.dp))
-                                        Icon(
-                                            imageVector = Icons.Filled.Refresh,
-                                            contentDescription = "추천 새로고침",
-                                            modifier = Modifier.size(18.dp),
-                                        )
-                                    }
-                                }
+                        if (uiState.todayPicks.isNotEmpty()) {
+                            item(key = "today_picks_header") {
+                                HomeSectionHeader(
+                                    title = "오늘의 추천",
+                                    actionLabel = "새로고침",
+                                    actionEnabled = !uiState.isRefreshingTodayPicks,
+                                    actionLoading = uiState.isRefreshingTodayPicks,
+                                    onActionClick = viewModel::refreshRecommendations,
+                                )
                             }
 
-                            item(key = "recommended_row") {
+                            item(key = "today_picks_row") {
                                 LazyRow(
-                                    state = recommendedListState,
+                                    state = todayPicksListState,
                                     contentPadding = PaddingValues(horizontal = 16.dp),
                                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                                 ) {
                                     items(
-                                        items = uiState.recommendedArticles,
-                                        key = { "rec_${it.id}" },
+                                        items = uiState.todayPicks,
+                                        key = { "today_${it.id}" },
                                     ) { article ->
                                         RecommendedArticleCard(
                                             article = article,
@@ -331,80 +199,73 @@ fun HomeScreen(
                                     }
                                 }
                             }
+                        }
 
-                            item(key = "latest_header") {
-                                Text(
-                                    text = "최신 아티클",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onBackground,
-                                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 4.dp),
+                        if (uiState.interestTopics.isNotEmpty()) {
+                            item(key = "interest_topics_header") {
+                                HomeSectionHeader(title = "관심 주제")
+                            }
+
+                            item(key = "interest_topics_row") {
+                                LazyRow(
+                                    contentPadding = PaddingValues(horizontal = 16.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                ) {
+                                    items(
+                                        items = uiState.interestTopics,
+                                        key = { "topic_${it.category}" },
+                                    ) { topic ->
+                                        InterestTopicCard(
+                                            category = topic.category,
+                                            unreadCount = topic.unreadCount,
+                                            onClick = { onTopicClick(topic.category) },
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        if (uiState.missedArticles.isNotEmpty()) {
+                            item(key = "missed_articles_header") {
+                                HomeSectionHeader(title = "놓친 글")
+                            }
+
+                            items(
+                                items = uiState.missedArticles,
+                                key = { "missed_${it.id}" },
+                            ) { article ->
+                                ArticleCard(
+                                    article = article,
+                                    onClick = { onArticleClick(article.id, article.link) },
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                    isNew = uiState.lastVisitTime?.let { article.displayDate > it } ?: false,
+                                    onBlogClick = onBlogClick,
                                 )
                             }
                         }
 
-                        items(
-                            items = uiState.displayArticles,
-                            key = { it.id },
-                        ) { article ->
-                            ArticleCard(
-                                article = article,
-                                onClick = { onArticleClick(article.id, article.link) },
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                isNew = uiState.lastVisitTime?.let { article.displayDate > it } ?: false,
-                                onBlogClick = onBlogClick,
-                            )
-                        }
+                        if (uiState.latestPreview.isNotEmpty()) {
+                            item(key = "latest_preview_header") {
+                                HomeSectionHeader(
+                                    title = "최신 글",
+                                    actionLabel = "전체 보기",
+                                    onActionClick = onLatestFeedClick,
+                                )
+                            }
 
-                        if (uiState.isLoadingMore) {
-                            item {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    CircularProgressIndicator()
-                                }
+                            items(
+                                items = uiState.latestPreview,
+                                key = { "latest_${it.id}" },
+                            ) { article ->
+                                ArticleCard(
+                                    article = article,
+                                    onClick = { onArticleClick(article.id, article.link) },
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                    isNew = uiState.lastVisitTime?.let { article.displayDate > it } ?: false,
+                                    onBlogClick = onBlogClick,
+                                )
                             }
                         }
-                    }
-
-                    // 필터를 LazyColumn 위에 오버레이
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .offset(y = filterOffsetDp)
-                            .background(MaterialTheme.colorScheme.background)
-                            .onGloballyPositioned { coordinates ->
-                                val newHeight = coordinates.size.height.toFloat()
-                                filterHeightPx = newHeight
-                                filterOffsetPx = filterOffsetPx.coerceIn(-newHeight, 0f)
-                            },
-                    ) {
-                        CategoryFilterRow(
-                            selectedCategory = uiState.selectedCategory,
-                            onCategorySelected = viewModel::selectCategory,
-                            categories = uiState.categories,
-                        )
-
-                        Row(
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            FilterChip(
-                                selected = uiState.showUnreadOnly,
-                                onClick = viewModel::toggleUnreadFilter,
-                                label = { Text("안 본 글만", style = MaterialTheme.typography.labelSmall) },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = if (uiState.showUnreadOnly) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                                        contentDescription = null,
-                                    )
-                                },
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
                     }
 
                     ScrollToTopFab(
@@ -419,5 +280,68 @@ fun HomeScreen(
                 }
             }
         }
+    }
+}
+
+private fun HomeUiState.hasHomeContent(): Boolean =
+    todayPicks.isNotEmpty() ||
+        interestTopics.isNotEmpty() ||
+        missedArticles.isNotEmpty() ||
+        latestPreview.isNotEmpty()
+
+private fun HomeUiState.homeListItemCount(): Int =
+    sectionItemCount(todayPicks.isNotEmpty(), 2) +
+        sectionItemCount(interestTopics.isNotEmpty(), 2) +
+        sectionItemCount(missedArticles.isNotEmpty(), 1 + missedArticles.size) +
+        sectionItemCount(latestPreview.isNotEmpty(), 1 + latestPreview.size)
+
+private fun sectionItemCount(hasSection: Boolean, count: Int): Int =
+    if (hasSection) count else 0
+
+@Composable
+private fun LoadingState() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+@Composable
+private fun ErrorState(
+    message: String,
+    onRetryClick: () -> Unit,
+) {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.error,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            TextButton(onClick = onRetryClick) {
+                Icon(Icons.Filled.Refresh, contentDescription = null)
+                Text("재시도")
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmptyState() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = "아티클이 없습니다",
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
