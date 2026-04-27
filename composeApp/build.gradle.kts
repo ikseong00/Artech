@@ -15,6 +15,10 @@ plugins {
     alias(libs.plugins.buildkonfig)
 }
 
+if (project.file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 kotlin {
     androidTarget {
         compilerOptions {
@@ -37,6 +41,8 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.koin.android)
+            implementation(project.dependencies.platform(libs.firebase.bom))
+            implementation(libs.firebase.analytics)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -158,6 +164,7 @@ buildkonfig {
         buildConfigField(STRING, "SUPABASE_KEY", System.getenv("SUPABASE_KEY") ?: properties.getProperty("supabase.key", ""))
         buildConfigField(STRING, "APP_VERSION", android.defaultConfig.versionName!!)
         buildConfigField(STRING, "APP_PLATFORM", "android")
+        buildConfigField(STRING, "FIREBASE_ANALYTICS_ENABLED", project.file("google-services.json").exists().toString())
     }
 
     targetConfigs {
