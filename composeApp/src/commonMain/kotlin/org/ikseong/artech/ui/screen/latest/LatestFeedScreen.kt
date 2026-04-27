@@ -41,9 +41,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import org.ikseong.artech.analytics.AnalyticsEvents
+import org.ikseong.artech.analytics.AnalyticsTracker
+import org.ikseong.artech.data.model.Article
 import org.ikseong.artech.ui.component.ArticleCard
 import org.ikseong.artech.ui.component.CategoryFilterRow
 import org.ikseong.artech.ui.component.ScrollToTopFab
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,6 +57,7 @@ fun LatestFeedScreen(
     onBlogClick: (String) -> Unit,
     onBack: () -> Unit,
     viewModel: LatestFeedViewModel = koinViewModel(),
+    analyticsTracker: AnalyticsTracker = koinInject(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
@@ -154,7 +159,15 @@ fun LatestFeedScreen(
                             ) {
                                 CategoryFilterRow(
                                     selectedCategory = uiState.selectedCategory,
-                                    onCategorySelected = viewModel::selectCategory,
+                                    onCategorySelected = { category ->
+                                        analyticsTracker.logEvent(
+                                            AnalyticsEvents.categorySelect(
+                                                source = "latest_feed",
+                                                category = category,
+                                            ),
+                                        )
+                                        viewModel.selectCategory(category)
+                                    },
                                     categories = uiState.categories,
                                 )
 
@@ -164,7 +177,15 @@ fun LatestFeedScreen(
                                 ) {
                                     FilterChip(
                                         selected = uiState.showUnreadOnly,
-                                        onClick = viewModel::toggleUnreadFilter,
+                                        onClick = {
+                                            analyticsTracker.logEvent(
+                                                AnalyticsEvents.unreadFilterToggle(
+                                                    source = "latest_feed",
+                                                    enabled = !uiState.showUnreadOnly,
+                                                ),
+                                            )
+                                            viewModel.toggleUnreadFilter()
+                                        },
                                         label = {
                                             Text(
                                                 "안 본 글만",
@@ -221,10 +242,24 @@ fun LatestFeedScreen(
                         ) { article ->
                             ArticleCard(
                                 article = article,
-                                onClick = { onArticleClick(article.id, article.link) },
+                                onClick = {
+                                    analyticsTracker.logArticleOpen(
+                                        article = article,
+                                        source = "latest_feed",
+                                    )
+                                    onArticleClick(article.id, article.link)
+                                },
                                 modifier = Modifier.padding(horizontal = 16.dp),
                                 isNew = uiState.lastVisitTime?.let { article.displayDate > it } ?: false,
-                                onBlogClick = onBlogClick,
+                                onBlogClick = { blogSource ->
+                                    analyticsTracker.logEvent(
+                                        AnalyticsEvents.blogOpen(
+                                            source = "latest_feed",
+                                            blogSource = blogSource,
+                                        ),
+                                    )
+                                    onBlogClick(blogSource)
+                                },
                             )
                         }
 
@@ -255,4 +290,18 @@ fun LatestFeedScreen(
             }
         }
     }
+}
+
+private fun AnalyticsTracker.logArticleOpen(
+    article: Article,
+    source: String,
+) {
+    logEvent(
+        AnalyticsEvents.articleOpen(
+            articleId = article.id,
+            source = source,
+            category = article.category,
+            blogSource = article.blogSource,
+        ),
+    )
 }

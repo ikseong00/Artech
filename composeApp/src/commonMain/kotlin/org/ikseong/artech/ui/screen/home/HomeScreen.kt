@@ -39,6 +39,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import org.ikseong.artech.analytics.AnalyticsEvents
+import org.ikseong.artech.analytics.AnalyticsTracker
+import org.ikseong.artech.data.model.Article
 import org.ikseong.artech.ui.component.ArticleCard
 import org.ikseong.artech.ui.component.HomeSectionHeader
 import org.ikseong.artech.ui.component.InterestTopicHubCard
@@ -46,6 +49,7 @@ import org.ikseong.artech.ui.component.RecommendedArticleCard
 import org.ikseong.artech.ui.component.ScrollToTopFab
 import org.ikseong.artech.util.PlatformBackHandler
 import org.ikseong.artech.util.rememberExitAppAction
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,6 +61,7 @@ fun HomeScreen(
     onLatestFeedClick: () -> Unit = {},
     onTopicClick: (String) -> Unit = {},
     viewModel: HomeViewModel = koinViewModel(),
+    analyticsTracker: AnalyticsTracker = koinInject(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
@@ -178,7 +183,12 @@ fun HomeScreen(
                                     actionLabel = "새로고침",
                                     actionEnabled = !uiState.isRefreshingTodayPicks,
                                     actionLoading = uiState.isRefreshingTodayPicks,
-                                    onActionClick = viewModel::refreshRecommendations,
+                                    onActionClick = {
+                                        analyticsTracker.logEvent(
+                                            AnalyticsEvents.recommendationRefresh(source = "home"),
+                                        )
+                                        viewModel.refreshRecommendations()
+                                    },
                                 )
                             }
 
@@ -194,7 +204,10 @@ fun HomeScreen(
                                     ) { article ->
                                         RecommendedArticleCard(
                                             article = article,
-                                            onClick = { onArticleClick(article.id, article.link) },
+                                            onClick = {
+                                                analyticsTracker.logArticleOpen(article, source = "home_today_picks")
+                                                onArticleClick(article.id, article.link)
+                                            },
                                             isNew = uiState.lastVisitTime?.let { article.displayDate > it } ?: false,
                                         )
                                     }
@@ -228,10 +241,21 @@ fun HomeScreen(
                             ) { article ->
                                 ArticleCard(
                                     article = article,
-                                    onClick = { onArticleClick(article.id, article.link) },
+                                    onClick = {
+                                        analyticsTracker.logArticleOpen(article, source = "home_missed")
+                                        onArticleClick(article.id, article.link)
+                                    },
                                     modifier = Modifier.padding(horizontal = 16.dp),
                                     isNew = uiState.lastVisitTime?.let { article.displayDate > it } ?: false,
-                                    onBlogClick = onBlogClick,
+                                    onBlogClick = { blogSource ->
+                                        analyticsTracker.logEvent(
+                                            AnalyticsEvents.blogOpen(
+                                                source = "home_missed",
+                                                blogSource = blogSource,
+                                            ),
+                                        )
+                                        onBlogClick(blogSource)
+                                    },
                                 )
                             }
                         }
@@ -251,10 +275,21 @@ fun HomeScreen(
                             ) { article ->
                                 ArticleCard(
                                     article = article,
-                                    onClick = { onArticleClick(article.id, article.link) },
+                                    onClick = {
+                                        analyticsTracker.logArticleOpen(article, source = "home_latest_preview")
+                                        onArticleClick(article.id, article.link)
+                                    },
                                     modifier = Modifier.padding(horizontal = 16.dp),
                                     isNew = uiState.lastVisitTime?.let { article.displayDate > it } ?: false,
-                                    onBlogClick = onBlogClick,
+                                    onBlogClick = { blogSource ->
+                                        analyticsTracker.logEvent(
+                                            AnalyticsEvents.blogOpen(
+                                                source = "home_latest_preview",
+                                                blogSource = blogSource,
+                                            ),
+                                        )
+                                        onBlogClick(blogSource)
+                                    },
                                 )
                             }
                         }
@@ -289,6 +324,20 @@ private fun HomeUiState.homeListItemCount(): Int =
 
 private fun sectionItemCount(hasSection: Boolean, count: Int): Int =
     if (hasSection) count else 0
+
+private fun AnalyticsTracker.logArticleOpen(
+    article: Article,
+    source: String,
+) {
+    logEvent(
+        AnalyticsEvents.articleOpen(
+            articleId = article.id,
+            source = source,
+            category = article.category,
+            blogSource = article.blogSource,
+        ),
+    )
+}
 
 @Composable
 private fun LoadingState() {
