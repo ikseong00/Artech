@@ -27,7 +27,7 @@ fun HomeSectionHeader(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 4.dp),
+            .padding(start = 16.dp, end = 8.dp, top = 4.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -53,6 +53,7 @@ fun HomeSectionHeader(
                 Text(
                     text = actionLabel,
                     style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }

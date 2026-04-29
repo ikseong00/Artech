@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -51,6 +52,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.ikseong.artech.data.model.ThemeMode
+import org.ikseong.artech.ui.component.InterestCategoryChips
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -106,8 +108,8 @@ fun SettingsScreen(
             SettingsSectionHeader(title = "화면 설정")
             SettingsToggleItem(
                 icon = Icons.Filled.DarkMode,
-                iconBackgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                iconTint = MaterialTheme.colorScheme.primary,
+                iconBackgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                iconTint = MaterialTheme.colorScheme.onSurfaceVariant,
                 title = "다크모드",
                 description = when (uiState.themeMode) {
                     ThemeMode.DARK -> "켜짐"
@@ -124,11 +126,22 @@ fun SettingsScreen(
                 color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
             )
 
+            SettingsSectionHeader(title = "관심 추천")
+            SettingsInterestCategoryItem(
+                categories = uiState.availableCategories,
+                selectedCategories = uiState.interestCategories,
+                onCategoryClick = viewModel::toggleInterestCategory,
+            )
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+            )
+
             SettingsSectionHeader(title = "탐색")
             SettingsItem(
                 icon = Icons.AutoMirrored.Filled.List,
-                iconBackgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                iconTint = MaterialTheme.colorScheme.primary,
+                iconBackgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                iconTint = MaterialTheme.colorScheme.onSurfaceVariant,
                 title = "블로그 목록",
                 description = "수집 중인 기술 블로그 보기",
                 onClick = onBlogListClick,
@@ -164,8 +177,8 @@ fun SettingsScreen(
             SettingsSectionHeader(title = "앱 정보")
             SettingsItem(
                 icon = Icons.Filled.Email,
-                iconBackgroundColor = MaterialTheme.colorScheme.primaryContainer,
-                iconTint = MaterialTheme.colorScheme.primary,
+                iconBackgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                iconTint = MaterialTheme.colorScheme.onSurfaceVariant,
                 title = "문의하기",
                 description = "버그 제보 및 의견 보내기",
                 onClick = onContactClick,
@@ -198,11 +211,62 @@ fun SettingsScreen(
 }
 
 @Composable
+private fun SettingsInterestCategoryItem(
+    categories: List<String>,
+    selectedCategories: List<String>,
+    onCategoryClick: (String) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.Top,
+    ) {
+        SettingsIconBox(
+            icon = Icons.Filled.Settings,
+            backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "관심 카테고리",
+                style = MaterialTheme.typography.bodyLarge,
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = if (selectedCategories.isEmpty()) {
+                    "홈 추천에 사용할 카테고리를 선택하세요"
+                } else {
+                    "${selectedCategories.size}개 선택됨"
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            if (categories.isEmpty()) {
+                Text(
+                    text = "카테고리를 불러오는 중…",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                InterestCategoryChips(
+                    categories = categories,
+                    selectedCategories = selectedCategories,
+                    onCategoryClick = onCategoryClick,
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun SettingsSectionHeader(title: String) {
     Text(
         text = title,
         style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.primary,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(start = 16.dp, top = 24.dp, end = 16.dp, bottom = 8.dp),
     )
 }
@@ -281,8 +345,12 @@ private fun SettingsToggleItem(
             checked = checked,
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
-                checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
-                checkedTrackColor = MaterialTheme.colorScheme.primary,
+                checkedThumbColor = MaterialTheme.colorScheme.primary,
+                checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
+                checkedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.42f),
+                uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                uncheckedTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                uncheckedBorderColor = MaterialTheme.colorScheme.outline,
             ),
         )
     }

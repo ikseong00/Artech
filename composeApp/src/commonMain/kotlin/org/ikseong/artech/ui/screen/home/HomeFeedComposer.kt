@@ -9,6 +9,7 @@ object HomeFeedComposer {
 
     private const val DayInMilliseconds = 24 * 60 * 60 * 1000L
     private const val TodayPickCount = 5
+    private const val InterestRecommendationPerCategoryCount = 6
     private const val InterestTopicCount = 5
     private const val MissedArticleCount = 3
     private const val LatestPreviewCount = 4
@@ -19,10 +20,15 @@ object HomeFeedComposer {
         candidates: List<Article>,
         readArticleIds: Set<Long>,
         profile: HomeInterestProfile,
+        selectedInterestCategories: List<String> = emptyList(),
         now: Instant,
     ): HomeFeedSections {
         val recentCandidates = candidates.distinctBy { it.id }
         val unreadCandidates = recentCandidates.filter { it.id !in readArticleIds }
+        val randomBannerArticle = pickRandomBannerArticle(
+            candidates = unreadCandidates.ifEmpty { recentCandidates },
+            now = now,
+        )
         val unreadDisplayCategories = displayCategoriesFor(unreadCandidates)
         val unreadCountByDisplayCategory = unreadDisplayCategories
             .groupingBy { it }
@@ -42,9 +48,14 @@ object HomeFeedComposer {
                 )
             }
             .sortedWith(scoredArticleComparator())
+        val rankedRecommendations = rankedUnread.filter { it.article.id != randomBannerArticle?.id }
 
         val todayPicks = pickTodayPicks(rankedUnread)
         val todayPickIds = todayPicks.map { it.id }.toSet()
+        val interestCategoryRecommendations = buildInterestCategoryRecommendations(
+            selectedInterestCategories = selectedInterestCategories,
+            rankedUnread = rankedRecommendations,
+        )
         val interestTopics = buildInterestTopics(
             unreadDisplayCategories = unreadDisplayCategories,
             unreadCountByDisplayCategory = unreadCountByDisplayCategory,
@@ -71,7 +82,9 @@ object HomeFeedComposer {
             )
             .take(LatestPreviewCount)
         return HomeFeedSections(
+            randomBannerArticle = randomBannerArticle,
             todayPicks = todayPicks,
+            interestCategoryRecommendations = interestCategoryRecommendations,
             interestTopics = interestTopics,
             interestTopicUnreadTotal = interestTopicUnreadTotal,
             missedArticles = missedArticles,
@@ -104,6 +117,42 @@ object HomeFeedComposer {
 
         return selected
     }
+
+    private fun buildInterestCategoryRecommendations(
+        selectedInterestCategories: List<String>,
+        rankedUnread: List<ScoredArticle>,
+    ): List<InterestCategoryRecommendation> =
+        selectedInterestCategories
+            .asSequence()
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .map(CategoryGroup::toDisplayName)
+            .distinct()
+            .mapNotNull { displayCategory ->
+                val expandedCategories = CategoryGroup.expand(displayCategory).toSet()
+                val articles = rankedUnread
+                    .asSequence()
+                    .map { it.article }
+                    .filter { article ->
+                        article.category
+                            ?.takeIf { it.isNotBlank() }
+                            ?.let { category ->
+                                category in expandedCategories ||
+                                    CategoryGroup.toDisplayName(category) == displayCategory
+                            } == true
+                    }
+                    .take(InterestRecommendationPerCategoryCount)
+                    .toList()
+                articles
+                    .takeIf { it.isNotEmpty() }
+                    ?.let {
+                        InterestCategoryRecommendation(
+                            category = displayCategory,
+                            articles = it,
+                        )
+                    }
+            }
+            .toList()
 
     private fun buildInterestTopics(
         unreadDisplayCategories: List<String>,
@@ -174,6 +223,26 @@ object HomeFeedComposer {
         val centeredBonus = 5.5 - abs(ageInDays - 5.0) * 1.2
         val stalePenalty = (ageInDays - 5.0).coerceAtLeast(0.0) * 1.0
         return (centeredBonus - stalePenalty).coerceAtLeast(0.1)
+    }
+
+    private fun pickRandomBannerArticle(
+        candidates: List<Article>,
+        now: Instant,
+    ): Article? {
+        if (candidates.isEmpty()) return null
+
+        val daySeed = now.toEpochMilliseconds() / DayInMilliseconds
+        return candidates.minWithOrNull(
+            compareBy<Article> { seededSortValue(it.id, daySeed) }
+                .thenByDescending { it.displayDate.toEpochMilliseconds() }
+                .thenByDescending { it.id },
+        )
+    }
+
+    private fun seededSortValue(id: Long, seed: Long): Long {
+        var value = id * 1_103_515_245L + seed * 12_345L
+        value = value xor (value ushr 16)
+        return value and Long.MAX_VALUE
     }
 
     private fun ageInDays(

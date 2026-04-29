@@ -7,8 +7,15 @@ data class InterestTopicShortcut(
     val unreadCount: Int,
 )
 
+data class InterestCategoryRecommendation(
+    val category: String,
+    val articles: List<Article>,
+)
+
 data class HomeFeedSections(
+    val randomBannerArticle: Article?,
     val todayPicks: List<Article>,
+    val interestCategoryRecommendations: List<InterestCategoryRecommendation>,
     val interestTopics: List<InterestTopicShortcut>,
     val interestTopicUnreadTotal: Int,
     val missedArticles: List<Article>,

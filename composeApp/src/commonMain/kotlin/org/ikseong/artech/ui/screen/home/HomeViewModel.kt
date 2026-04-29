@@ -7,11 +7,13 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
+import org.ikseong.artech.data.model.CategoryGroup
 import org.ikseong.artech.data.model.Article
 import org.ikseong.artech.data.repository.ArticleRepository
 import org.ikseong.artech.data.repository.FavoriteRepository
@@ -37,12 +39,22 @@ class HomeViewModel(
     val uiEffect = _uiEffect.receiveAsFlow()
 
     private var loadJob: Job? = null
+    private var hasRequestedInitialHome = false
 
     init {
         viewModelScope.launch {
             val lastVisit = visitSessionRepository.getSessionLastVisitTime()
             _uiState.update { it.copy(lastVisitTime = lastVisit) }
-            loadHome(refreshingTodayPicks = false)
+        }
+        viewModelScope.launch {
+            settingsRepository.interestCategories.collect { categories ->
+                val previousCategories = _uiState.value.selectedInterestCategories
+                _uiState.update { it.copy(selectedInterestCategories = categories) }
+                if (!hasRequestedInitialHome || previousCategories != categories) {
+                    hasRequestedInitialHome = true
+                    loadHome(refreshingTodayPicks = false)
+                }
+            }
         }
     }
 
@@ -53,6 +65,12 @@ class HomeViewModel(
     fun refreshRecommendations() {
         if (_uiState.value.isRefreshingTodayPicks) return
         loadHome(refreshingTodayPicks = true)
+    }
+
+    fun toggleInterestCategory(category: String) {
+        viewModelScope.launch {
+            settingsRepository.toggleInterestCategory(category)
+        }
     }
 
     fun saveScrollPosition(index: Int, offset: Int) {
@@ -82,13 +100,23 @@ class HomeViewModel(
 
         loadJob = viewModelScope.launch {
             try {
-                val sections = loadHomeSections()
-                settingsRepository.addRecommendedArticleIdsSeenToday(sections.todayPicks.map { it.id })
+                val homeLoadResult = loadHomeSections()
+                val sections = homeLoadResult.sections
+                settingsRepository.addRecommendedArticleIdsSeenToday(
+                    sections.todayPicks.map { it.id } +
+                        sections.interestCategoryRecommendations.flatMap { recommendation ->
+                            recommendation.articles.map { it.id }
+                        },
+                )
                 _uiState.update {
                     it.copy(
+                        randomBannerArticle = sections.randomBannerArticle,
                         todayPicks = sections.todayPicks,
+                        interestCategoryRecommendations = sections.interestCategoryRecommendations,
                         interestTopics = sections.interestTopics,
                         interestTopicUnreadTotal = sections.interestTopicUnreadTotal,
+                        availableCategories = homeLoadResult.availableCategories,
+                        selectedInterestCategories = homeLoadResult.selectedInterestCategories,
                         missedArticles = sections.missedArticles,
                         latestPreview = sections.latestPreview,
                         isLoading = false,
@@ -113,10 +141,16 @@ class HomeViewModel(
         }
     }
 
-    private suspend fun loadHomeSections(): HomeFeedSections {
+    private suspend fun loadHomeSections(): HomeLoadResult {
         val now = currentInstant()
         val seenTodayPickIds = settingsRepository.getRecommendedArticleIdsSeenToday()
+        val selectedInterestCategories = settingsRepository.interestCategories.first()
         val candidates = articleRepository.getHomeFeedCandidates()
+        val availableCategories = runCatching {
+            articleRepository.getCategories().sorted()
+        }.getOrElse {
+            CategoryGroup.mergeCategories(candidates.mapNotNull { article -> article.category }).sorted()
+        }
         val readHistory = historyRepository.getAllWithReadAt().first()
         val favorites = favoriteRepository.getAllWithSavedAt().first()
         val profile = interestProfileCalculator.calculate(
@@ -124,13 +158,19 @@ class HomeViewModel(
             favorites = favorites,
             now = now,
         )
-        return composeHomeSections(
+        val sections = composeHomeSections(
             feedComposer = feedComposer,
             candidates = candidates,
             readArticleIds = readHistory.map { it.article.id }.toSet(),
             profile = profile,
+            selectedInterestCategories = selectedInterestCategories,
             seenTodayPickIds = seenTodayPickIds,
             now = now,
+        )
+        return HomeLoadResult(
+            sections = sections,
+            availableCategories = availableCategories,
+            selectedInterestCategories = selectedInterestCategories,
         )
     }
 
@@ -139,11 +179,18 @@ class HomeViewModel(
 
 }
 
+private data class HomeLoadResult(
+    val sections: HomeFeedSections,
+    val availableCategories: List<String>,
+    val selectedInterestCategories: List<String>,
+)
+
 internal fun composeHomeSections(
     feedComposer: HomeFeedComposer,
     candidates: List<Article>,
     readArticleIds: Set<Long>,
     profile: HomeInterestProfile,
+    selectedInterestCategories: List<String> = emptyList(),
     seenTodayPickIds: Set<Long>,
     now: Instant,
 ): HomeFeedSections {
@@ -151,6 +198,7 @@ internal fun composeHomeSections(
         candidates = candidates,
         readArticleIds = readArticleIds,
         profile = profile,
+        selectedInterestCategories = selectedInterestCategories,
         now = now,
     )
     if (seenTodayPickIds.isEmpty()) return baseSections
@@ -159,6 +207,7 @@ internal fun composeHomeSections(
         candidates = candidates.filter { it.id !in seenTodayPickIds },
         readArticleIds = readArticleIds,
         profile = profile,
+        selectedInterestCategories = selectedInterestCategories,
         now = now,
     ).todayPicks
 
