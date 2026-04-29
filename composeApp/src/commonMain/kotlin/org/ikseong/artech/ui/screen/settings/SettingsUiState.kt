@@ -6,4 +6,6 @@ import org.ikseong.artech.data.model.ThemeMode
 data class SettingsUiState(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val appVersion: String = BuildKonfig.APP_VERSION,
+    val availableCategories: List<String> = emptyList(),
+    val interestCategories: List<String> = emptyList(),
 )

@@ -67,8 +67,61 @@ class SettingsRepository(
 
     val skippedOptionalVersion: Flow<String?> = dataStore.data.map { it[SKIPPED_OPTIONAL_VERSION_KEY] }
 
+    val interestCategories: Flow<List<String>> = dataStore.data.map { preferences ->
+        val orderedCategories = preferences[INTEREST_CATEGORIES_ORDERED_KEY]
+            ?.let(::decodeInterestCategories)
+            .orEmpty()
+        orderedCategories.ifEmpty {
+            preferences[LEGACY_INTEREST_CATEGORIES_KEY]
+                .orEmpty()
+                .toList()
+                .normalizedInterestCategories()
+        }
+    }
+
     suspend fun setSkippedOptionalVersion(version: String) {
         dataStore.edit { it[SKIPPED_OPTIONAL_VERSION_KEY] = version }
+    }
+
+    suspend fun setInterestCategories(categories: List<String>) {
+        dataStore.edit { preferences ->
+            val normalizedCategories = categories.normalizedInterestCategories()
+            if (normalizedCategories.isEmpty()) {
+                preferences.remove(INTEREST_CATEGORIES_ORDERED_KEY)
+                preferences.remove(LEGACY_INTEREST_CATEGORIES_KEY)
+            } else {
+                preferences[INTEREST_CATEGORIES_ORDERED_KEY] = encodeInterestCategories(normalizedCategories)
+                preferences.remove(LEGACY_INTEREST_CATEGORIES_KEY)
+            }
+        }
+    }
+
+    suspend fun toggleInterestCategory(category: String) {
+        val normalizedCategory = category.trim()
+        if (normalizedCategory.isEmpty()) return
+
+        dataStore.edit { preferences ->
+            val currentCategories = preferences[INTEREST_CATEGORIES_ORDERED_KEY]
+                ?.let(::decodeInterestCategories)
+                .orEmpty()
+                .ifEmpty {
+                    preferences[LEGACY_INTEREST_CATEGORIES_KEY]
+                        .orEmpty()
+                        .toList()
+                        .normalizedInterestCategories()
+                }
+            val nextCategories = if (normalizedCategory in currentCategories) {
+                currentCategories - normalizedCategory
+            } else {
+                currentCategories + normalizedCategory
+            }
+            if (nextCategories.isEmpty()) {
+                preferences.remove(INTEREST_CATEGORIES_ORDERED_KEY)
+            } else {
+                preferences[INTEREST_CATEGORIES_ORDERED_KEY] = encodeInterestCategories(nextCategories)
+            }
+            preferences.remove(LEGACY_INTEREST_CATEGORIES_KEY)
+        }
     }
 
     suspend fun getRecommendRefreshRemaining(): Int {
@@ -130,6 +183,17 @@ class SettingsRepository(
         Instant.fromEpochMilliseconds(kotlin.time.Clock.System.now().toEpochMilliseconds())
             .toLocalDateTime(TimeZone.currentSystemDefault()).date.toString()
 
+    private fun encodeInterestCategories(categories: List<String>): String =
+        categories.normalizedInterestCategories().joinToString("\n")
+
+    private fun decodeInterestCategories(value: String): List<String> =
+        value.lineSequence().toList().normalizedInterestCategories()
+
+    private fun List<String>.normalizedInterestCategories(): List<String> =
+        map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .distinct()
+
     companion object {
         const val MAX_RECOMMEND_REFRESHES = 5
         private val THEME_MODE_KEY = stringPreferencesKey("theme_mode")
@@ -143,6 +207,8 @@ class SettingsRepository(
         private val RECOMMEND_REFRESH_COUNT_KEY = intPreferencesKey("recommend_refresh_count")
         private val RECOMMEND_SEEN_ARTICLE_IDS_DATE_KEY = stringPreferencesKey("recommend_seen_article_ids_date")
         private val RECOMMEND_SEEN_ARTICLE_IDS_KEY = stringSetPreferencesKey("recommend_seen_article_ids")
+        private val INTEREST_CATEGORIES_ORDERED_KEY = stringPreferencesKey("interest_categories_ordered")
+        private val LEGACY_INTEREST_CATEGORIES_KEY = stringSetPreferencesKey("interest_categories")
     }
 }
 

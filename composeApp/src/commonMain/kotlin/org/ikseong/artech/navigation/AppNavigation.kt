@@ -61,10 +61,24 @@ fun AppNavigation(
     val navigateToHome: () -> Unit = {
         navController.navigate(Route.Home) {
             popUpTo(navController.graph.findStartDestination().id) {
-                saveState = true
+                saveState = false
             }
             launchSingleTop = true
-            restoreState = true
+            restoreState = false
+        }
+    }
+
+    val navigateToTopLevelDestination: (TopLevelDestination) -> Unit = { destination ->
+        if (destination == TopLevelDestination.HOME) {
+            navigateToHome()
+        } else {
+            navController.navigate(destination.route) {
+                popUpTo(navController.graph.findStartDestination().id) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
         }
     }
 
@@ -91,13 +105,7 @@ fun AppNavigation(
                             selected = selected,
                             onClick = {
                                 analyticsTracker.logEvent(AnalyticsEvents.tabSelect(destination.analyticsName))
-                                navController.navigate(destination.route) {
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    launchSingleTop = true
-                                    restoreState = true
-                                }
+                                navigateToTopLevelDestination(destination)
                             },
                             icon = {
                                 Icon(
@@ -140,14 +148,8 @@ fun AppNavigation(
                         analyticsTracker.logEvent(AnalyticsEvents.latestFeedOpen(source = "home"))
                         navController.navigate(Route.LatestFeed())
                     },
-                    onTopicClick = { category ->
-                        analyticsTracker.logEvent(
-                            AnalyticsEvents.categorySelect(
-                                source = "home_topic_hub",
-                                category = category,
-                            ),
-                        )
-                        navController.navigate(Route.LatestFeed(initialCategory = category))
+                    onInterestSettingsClick = {
+                        navigateToTopLevelDestination(TopLevelDestination.SETTINGS)
                     },
                 )
             }
